@@ -1,0 +1,38 @@
+{
+  "P001": {
+    "name": "Basic Cat",
+    "description": "Fast and cheap attacker.",
+    "image": "assets/images/P001.png",
+    "cost": 50,
+    "levelStats": [
+      { "hp": 300, "atk": 60, "speed": 50, "frequency": 100, "attackRange": 50 },
+      { "hp": 500, "atk": 80, "speed": 50, "frequency": 110, "attackRange": 50 },
+      { "hp": 700, "atk": 100, "speed": 50, "frequency": 115, "attackRange": 50 },
+      { "hp": 900, "atk": 150, "speed": 50, "frequency": 120, "attackRange": 50 }
+    ]
+  },
+  "P002": {
+    "name": "Tank Cat",
+    "description": "Slow but sturdy.",
+    "image": "assets/images/P002.png",
+    "cost": 75,
+    "levelStats": [
+      { "hp": 500, "atk": 80, "speed": 40, "frequency": 80, "attackRange": 60 },
+      { "hp": 750, "atk": 100, "speed": 40, "frequency": 85, "attackRange": 60 },
+      { "hp": 1000, "atk": 120, "speed": 40, "frequency": 90, "attackRange": 60 },
+      { "hp": 1300, "atk": 160, "speed": 40, "frequency": 95, "attackRange": 60 }
+    ]
+  },
+  "P003": {
+    "name": "Ninja Cat",
+    "description": "Very fast, low HP.",
+    "image": "assets/images/P003.png",
+    "cost": 60,
+    "levelStats": [
+      { "hp": 200, "atk": 70, "speed": 80, "frequency": 120, "attackRange": 45 },
+      { "hp": 250, "atk": 90, "speed": 85, "frequency": 130, "attackRange": 45 },
+      { "hp": 300, "atk": 110, "speed": 90, "frequency": 140, "attackRange": 45 },
+      { "hp": 350, "atk": 140, "speed": 95, "frequency": 150, "attackRange": 45 }
+    ]
+  }
+}

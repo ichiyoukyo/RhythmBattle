@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Battle - Select Team</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Basic button styling for the link */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button-back {
+            background-color: #6c757d;
+        }
+        .button-back:hover {
+            background-color: #5a6268;
+        }
+        .button:disabled {
+             background-color: #cccccc;
+             cursor: not-allowed;
+        }
+        body { font-family: sans-serif; padding: 20px; }
+        .container { display: flex; justify-content: space-around; margin-top: 20px; }
+
+        /* Available Characters List */
+        #available-characters {
+            width: 60%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 300px;
+            background-color: #f9f9f9;
+            display: flex; /* Use flexbox for wrapping */
+            flex-wrap: wrap; /* Allow items to wrap */
+            gap: 10px; /* Space between items */
+            align-content: flex-start; /* Align items to the start vertically */
+        }
+        .character-item {
+            border: 1px solid #eee;
+            padding: 5px;
+            text-align: center;
+            cursor: grab;
+            background-color: white;
+            width: 100px; /* Fixed width */
+            height: 130px; /* Fixed height */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .character-item:active { cursor: grabbing; }
+        .character-item img { max-width: 80px; max-height: 80px; display: block; margin: 0 auto; }
+        .character-item .name { font-weight: bold; font-size: 0.9em; }
+        .character-item .cost { font-size: 0.8em; color: #555; }
+
+        /* Team Slots Area */
+        #team-selection { width: 35%; }
+        #team-slots {
+            display: flex;
+            flex-direction: column; /* Stack slots vertically */
+            gap: 15px; /* Space between slots */
+        }
+        .slot {
+            width: 120px; /* Slightly larger slot */
+            height: 140px;
+            border: 2px dashed #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9em;
+            position: relative; /* For positioning remove button */
+            background-color: #f0f0f0;
+        }
+        .slot.over { border-style: solid; border-color: #007BFF; background-color: #e9f5ff; } /* Highlight on drag over */
+        .slot img { max-width: 100px; max-height: 100px; }
+        .slot .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            line-height: 16px;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+        }
+        .slot.filled .remove-btn { display: block; } /* Show when filled */
+        .slot.filled .placeholder-text { display: none; } /* Hide placeholder text */
+
+
+        /* Dragging feedback */
+        .dragging { opacity: 0.5; border: 2px dashed red; }
+
+    </style>
+</head>
+<body>
+
+<h1>Select Your Team</h1>
+<p>Drag characters from the list on the left to the slots on the right.</p>
+
+<div class="container">
+    <div id="available-characters-container">
+        <h2>Available Characters</h2>
+        <div id="available-characters">
+        </div>
+    </div>
+
+    <div id="team-selection">
+        <h2>Your Team</h2>
+        <div id="team-slots">
+            <div class="slot" id="slot-0" data-slot-index="0"><span class="placeholder-text">Slot 1</span></div>
+            <div class="slot" id="slot-1" data-slot-index="1"><span class="placeholder-text">Slot 2</span></div>
+            <div class="slot" id="slot-2" data-slot-index="2"><span class="placeholder-text">Slot 3</span></div>
+            <div class="slot" id="slot-3" data-slot-index="3"><span class="placeholder-text">Slot 4</span></div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <button id="start-battle-btn" class="button" disabled>Start Battle</button>
+    <a href="index.html" class="button button-back">Back to Home</a>
+</div>
+
+<script src="js/team.js"></script>
+
+</body>
+</html>

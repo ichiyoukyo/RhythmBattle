@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Battle - Battle!</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/battle.css">
+    <style>
+        /* General Body Styles */
+        body {
+            position: relative; /* Still useful if other elements need absolute positioning relative to body */
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px; /* Adjusted padding */
+            margin: 0;
+            /* removed overflow: hidden; to allow scrolling if content exceeds viewport height */
+        }
+
+        /* Canvas Styling */
+        #game-canvas {
+            display: block;
+            margin: 0 auto 15px auto; /* Center horizontally, add bottom margin */
+            background-color: #eee; /* Light grey background for visibility */
+            border: 1px solid black;
+            max-width: 100%; /* Ensure canvas scales down on smaller screens */
+            box-sizing: border-box; /* Include border in width/height */
+        }
+
+        /* Summon Controls Container (Populated by JS) */
+        #summon-controls-container {
+            display: flex; /* Arrange buttons horizontally */
+            justify-content: center; /* Center buttons */
+            align-items: center; /* Align items vertically */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 10px; /* Space between buttons */
+            padding: 10px 0; /* Add some vertical padding */
+            min-height: 50px; /* Ensure container has some height even if empty */
+        }
+
+        /* Styling for Buttons Added by JS into the container */
+        #summon-controls-container button {
+            padding: 10px 15px; /* Slightly larger padding */
+            font-size: 0.9em;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        #summon-controls-container button:hover {
+            background-color: #e0e0e0;
+            border-color: #bbb;
+        }
+        #summon-controls-container button:disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Navigation Links Container */
+        #navigation-controls {
+            margin-top: 20px; /* Space above the nav links */
+            text-align: center;
+        }
+
+        /* General Button Styling (Used by Nav Links) */
+        .button {
+            display: inline-block;
+            padding: 10px 20px; /* Adjusted padding */
+            margin: 5px 10px; /* Spacing around nav links */
+            background-color: #6c757d; /* Grey color */
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease; /* Smooth hover effect */
+        }
+        .button:hover {
+            background-color: #5a6268;
+        }
+        /* Specific button types if needed (e.g., .button.retreat, .button.quit) - currently just uses base .button style */
+
+        /* Restart Button Styling (Positioned Top-Left) */
+        button#restart-button {
+            position: absolute; /* Keep restart button absolutely positioned */
+            top: 10px; /* Adjusted position */
+            left: 10px;
+            padding: 8px 12px; /* Adjusted padding */
+            font-size: 0.9em;
+            background-color: #ffc107; /* Warning color */
+            color: black;
+            border: 1px solid #e0a800;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10; /* Ensure it's above other elements if needed */
+        }
+        button#restart-button:hover {
+            background-color: #e0a800;
+        }
+
+    </style>
+</head>
+<body>
+
+<canvas id="game-canvas" width="800" height="400">
+    Your browser does not support the HTML5 canvas tag.
+</canvas>
+
+<div id="summon-controls-container">
+</div>
+
+<div id="navigation-controls">
+    <a href="team.html" class="button retreat">Retreat / Change Team</a>
+    <a href="index.html" class="button quit">Quit Game</a>
+</div>
+
+<script src="js/character.js"></script>
+<script src="js/battle.js"></script>
+
+</body>
+</html>
