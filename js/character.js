@@ -15,14 +15,14 @@ class Unit {
         this.timeSinceLastAttack = this.attackCooldown; // Start ready to attack
 
         // Appearance (simple rectangle for MVP)
-        this.width = 30;
-        this.height = 50;
+        this.width = 50;  // Changed from 30 to 50
+        this.height = 50; // Changed from 50 to 50 to make it square
         this.color = (team === 'player') ? 'blue' : 'red';
 
         // Position
         this.x = startX;
         // Place unit on the "ground" (adjust as needed)
-        this.y = canvasHeight - this.height - 10; // 10px from bottom
+        this.y = canvasHeight - this.height - 10; // Adjusted for new height
 
         this.isAlive = true;
         this.currentTarget = null; // The specific unit/base being targeted

@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add these image state variables
     let backgroundImage = null;
+    let allyCastleImage = null;
+    let enemyCastleImage = null;
+    let castleDefeatFx = null;
     window.characterSprites = {};
 
     // --- Game State ---
@@ -34,32 +37,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let fullCharacterData = {}; // All data loaded from characters.json
     let enemyDataConfig = {}; // Enemy data loaded (or defined)
 
-    // Base Definition (createBase function remains the same)
+    // Base Definition (createBase function modified)
     function createBase(team) {
-        const baseWidth = 60;
-        const baseHeight = 100;
-        return { // Create the object to return
+        const baseWidth = 150;  // Changed from 60 to 150
+        const baseHeight = 150; // Changed from 100 to 150
+        return {
             id: team + 'Base',
             team: team,
             maxHp: 1000,
             hp: 1000,
+            // Adjust x position for enemy base to account for larger width
             x: (team === 'player') ? 0 : CANVAS_WIDTH - baseWidth,
+            // Adjust y position to keep base on ground with new height
             y: CANVAS_HEIGHT - baseHeight - 10,
             width: baseWidth,
             height: baseHeight,
             color: (team === 'player') ? 'darkblue' : 'darkred',
             isAlive: true,
+            isDefeated: false,
+            defeatAnimationStarted: false,
             takeDamage: function(damage) {
                 if (!this.isAlive) return;
                 this.hp -= damage;
                 console.log(`${this.team} Base took ${damage} damage, HP: ${this.hp}`);
                 if (this.hp <= 0) {
                     this.hp = 0;
-                    this.isAlive = false; // Use isAlive for win/loss check
+                    this.isAlive = false;
+                    this.isDefeated = true;
                     console.log(`${this.team} Base destroyed!`);
                     if (this.team === 'enemy') {
-                        gameOver = true;
-                        gameWon = true;
+                        // Don't set gameOver immediately, wait for animation
+                        setTimeout(() => {
+                            gameOver = true;
+                            gameWon = true;
+                        }, 1000); // Adjust timing based on your GIF duration
                     } else {
                         gameOver = true;
                         gameWon = false;
@@ -67,24 +78,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             draw: function(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                // Draw Base HP Bar
-                const hpBarWidth = this.width;
-                const hpBarHeight = 8;
-                const hpBarX = this.x;
-                const hpBarY = this.y - hpBarHeight - 5; // Position above the base
-                ctx.fillStyle = '#555'; // Dark background
-                ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
-                const currentHpWidth = hpBarWidth * (this.hp / this.maxHp);
-                ctx.fillStyle = 'lime'; // Bright green
-                ctx.fillRect(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
+                if (this.isDefeated && this.team === 'enemy' && castleDefeatFx) {
+                    // Draw defeat animation
+                    ctx.drawImage(
+                        castleDefeatFx,
+                        this.x,
+                        this.y,
+                        this.width,
+                        this.height
+                    );
+                    
+                    if (!this.defeatAnimationStarted) {
+                        this.defeatAnimationStarted = true;
+                        // Optional: Play defeat sound here
+                        // const defeatSound = new Audio('assets/sounds/castle-defeat.mp3');
+                        // defeatSound.play();
+                    }
+                } else {
+                    // Normal base drawing
+                    const castleImage = this.team === 'player' ? allyCastleImage : enemyCastleImage;
+                    if (castleImage) {
+                        ctx.drawImage(
+                            castleImage,
+                            this.x,
+                            this.y,
+                            this.width,
+                            this.height
+                        );
+                    } else {
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                    }
+                }
 
-                // Display HP Text on Base Bar
-                ctx.fillStyle = 'white';
-                ctx.font = '10px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(`${this.hp}/${this.maxHp}`, hpBarX + hpBarWidth / 2, hpBarY + hpBarHeight - 1);
+                // Only draw HP bar if base is still alive
+                if (this.isAlive) {
+                    // Draw Base HP Bar
+                    const hpBarWidth = this.width;
+                    const hpBarHeight = 8;
+                    const hpBarX = this.x;
+                    const hpBarY = this.y - hpBarHeight - 5; // Position above the base
+                    ctx.fillStyle = '#555'; // Dark background
+                    ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+                    const currentHpWidth = hpBarWidth * (this.hp / this.maxHp);
+                    ctx.fillStyle = 'lime'; // Bright green
+                    ctx.fillRect(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
+
+                    // Display HP Text on Base Bar
+                    ctx.fillStyle = 'white';
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${this.hp}/${this.maxHp}`, hpBarX + hpBarWidth / 2, hpBarY + hpBarHeight - 1);
+                }
             }
         };
     }
@@ -146,6 +191,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 backgroundImage.onerror = reject;
             });
 
+            // Load castle images
+            allyCastleImage = new Image();
+            allyCastleImage.src = 'assets/images/backgrounds/castle-ally.png';
+            await new Promise((resolve, reject) => {
+                allyCastleImage.onload = resolve;
+                allyCastleImage.onerror = reject;
+            });
+
+            enemyCastleImage = new Image();
+            enemyCastleImage.src = 'assets/images/backgrounds/castle-enemy.png';
+            await new Promise((resolve, reject) => {
+                enemyCastleImage.onload = resolve;
+                enemyCastleImage.onerror = reject;
+            });
+
+            // Load defeat effect
+            castleDefeatFx = new Image();
+            castleDefeatFx.src = 'assets/fx/castle-defeat.gif';
+            await new Promise((resolve, reject) => {
+                castleDefeatFx.onload = resolve;
+                castleDefeatFx.onerror = reject;
+            });
+
             // Load all character sprites
             const allCharacterIds = [...selectedTeamIds, ...Object.keys(enemyDataConfig)];
             for (const id of allCharacterIds) {
@@ -202,7 +270,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add level information to the unit for display purposes
             unitConfig.level = level + 1; // Convert to 1-based level number
 
-            const newUnit = new Unit(characterId, unitConfig, playerBase.x + playerBase.width + 5, 0, 'player', CANVAS_HEIGHT);
+            // Calculate spawn position at middle of base
+            const spawnX = playerBase.x + (playerBase.width / 2);
+            
+            const newUnit = new Unit(
+                characterId, 
+                unitConfig, 
+                spawnX, // Spawn at middle of base
+                0, 
+                'player', 
+                CANVAS_HEIGHT
+            );
             playerUnits.push(newUnit);
             console.log(`Spawned Level ${level+1} ${baseData.name} from slot ${slotIndex + 1}. Energy left: ${playerEnergy}`);
         } else {
@@ -221,7 +299,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // For enemies, assume stats are flat (no levels in this example)
         const unitConfig = { ...data }; // Pass all stats directly
 
-        const newUnit = new Unit(id, unitConfig, enemyBase.x - 35, 0, 'enemy', CANVAS_HEIGHT);
+        // Calculate spawn position at middle of enemy base
+        const spawnX = enemyBase.x + (enemyBase.width / 2);
+        
+        const newUnit = new Unit(
+            id, 
+            unitConfig, 
+            spawnX, // Spawn at middle of base
+            0, 
+            'enemy', 
+            CANVAS_HEIGHT
+        );
         enemyUnits.push(newUnit);
         console.log(`Spawned Enemy ${data.name}`);
     }

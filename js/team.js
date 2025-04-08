@@ -25,26 +25,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Display Characters ---
     function displayAvailableCharacters() {
-        availableCharsContainer.innerHTML = ''; // Clear previous content
+        availableCharsContainer.innerHTML = '';
         for (const id in characterData) {
             const char = characterData[id];
             const item = document.createElement('div');
             item.className = 'character-item';
-            item.draggable = true; // The DIV is draggable
-            item.dataset.id = id; // Store character ID
+            item.draggable = true;
+            item.dataset.id = id;
 
             item.innerHTML = `
                 <img src="${char.image}" 
                      alt="${char.name}" 
-                     draggable="false"  // <<< ADD THIS ATTRIBUTE
+                     draggable="false"
                      onerror="this.src='assets/images/placeholder.png'; this.alt='Image not found'"> 
                 <span class="name">${char.name}</span>
                 <span class="cost">Cost: ${char.cost}</span>
             `;
 
-            // Add click handler for character info
+            // Modified click handler - remove the draggable check
             item.addEventListener('click', (e) => {
-                if (!e.target.closest('.character-item').draggable) {
+                // Prevent click during drag
+                if (!item.classList.contains('dragging')) {
                     showCharacterInfo(id);
                 }
             });
@@ -187,7 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Show Character Info ---
     function showCharacterInfo(charId) {
         const char = characterData[charId];
-        if (!char) return;
+        if (!char) {
+            console.error('Character data not found for:', charId);
+            return;
+        }
+
+        console.log('Showing info for character:', charId); // Debug log
 
         // Get popup elements
         const popup = document.getElementById('character-info-popup');
@@ -195,6 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('popup-char-name');
         const description = document.getElementById('popup-char-description');
         const levelStats = document.getElementById('level-stats');
+
+        if (!popup || !image || !name || !description || !levelStats) {
+            console.error('Required popup elements not found');
+            return;
+        }
 
         // Set basic info
         image.src = char.image;
@@ -222,6 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show popup
         popup.style.display = 'block';
+
+        // Debug log
+        console.log('Popup should be visible now');
     }
 
     // --- Add Popup Close Handlers ---
