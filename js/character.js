@@ -153,30 +153,34 @@ class Unit {
 
     draw(ctx) {
         if (!this.isAlive) return;
+        
+        // Draw sprite/rectangle as before
+        const sprite = window.characterSprites?.[this.baseId];
+        if (sprite) {
+            ctx.drawImage(sprite, this.x, this.y, this.width, this.height);
+        } else {
+            ctx.fillStyle = this.team === 'player' ? 'blue' : 'red';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
 
-        // Draw unit body
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-
-        // Draw HP bar background
+        // Draw HP bar
         const hpBarWidth = this.width;
         const hpBarHeight = 5;
-        const hpBarX = this.x;
-        const hpBarY = this.y - hpBarHeight - 2; // Position above the unit
-        ctx.fillStyle = '#ddd'; // Grey background
-        ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+        const hpBarY = this.y - hpBarHeight - 2;
+        
+        ctx.fillStyle = '#555';
+        ctx.fillRect(this.x, hpBarY, hpBarWidth, hpBarHeight);
+        
+        const currentHpWidth = (this.hp / this.maxHp) * hpBarWidth;
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(this.x, hpBarY, currentHpWidth, hpBarHeight);
 
-        // Draw HP bar foreground
-        const currentHpWidth = hpBarWidth * (this.hp / this.maxHp);
-        ctx.fillStyle = 'green';
-        ctx.fillRect(hpBarX, hpBarY, currentHpWidth, hpBarHeight);
-
-        // Draw Attack Range (for debugging)
-        // ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
-        // ctx.beginPath();
-        // const rangeStartX = this.team === 'player' ? this.x + this.width : this.x;
-        // ctx.moveTo(rangeStartX, this.y);
-        // ctx.lineTo(rangeStartX + (this.team === 'player' ? this.attackRange : -this.attackRange), this.y);
-        // ctx.stroke();
+        // Add level display if it's a player unit
+        if (this.team === 'player' && this.level) {
+            ctx.fillStyle = 'white';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Lv.${this.level}`, this.x + this.width/2, this.y - 10);
+        }
     }
 }

@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Display Characters ---
-    // --- Display Characters ---
     function displayAvailableCharacters() {
         availableCharsContainer.innerHTML = ''; // Clear previous content
         for (const id in characterData) {
@@ -42,6 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="name">${char.name}</span>
                 <span class="cost">Cost: ${char.cost}</span>
             `;
+
+            // Add click handler for character info
+            item.addEventListener('click', (e) => {
+                if (!e.target.closest('.character-item').draggable) {
+                    showCharacterInfo(id);
+                }
+            });
+
             availableCharsContainer.appendChild(item);
         }
     }
@@ -156,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkTeamValidity();
     }
 
-
     // --- Validate Team and Enable Start Button ---
     function checkTeamValidity() {
         const isTeamFull = selectedTeam.every(id => id !== null);
@@ -175,6 +181,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Could not save team to localStorage:", error);
                 alert("Error saving team configuration.");
             }
+        }
+    });
+
+    // --- Show Character Info ---
+    function showCharacterInfo(charId) {
+        const char = characterData[charId];
+        if (!char) return;
+
+        // Get popup elements
+        const popup = document.getElementById('character-info-popup');
+        const image = document.getElementById('popup-char-image');
+        const name = document.getElementById('popup-char-name');
+        const description = document.getElementById('popup-char-description');
+        const levelStats = document.getElementById('level-stats');
+
+        // Set basic info
+        image.src = char.image;
+        name.textContent = char.name;
+        description.textContent = char.description;
+
+        // Generate stats HTML
+        let statsHTML = '';
+        char.levelStats.forEach((stats, index) => {
+            statsHTML += `
+                <div class="level-stats">
+                    <h4>Level ${index + 1}</h4>
+                    <div class="stat-grid">
+                        <div class="stat-item">HP: ${stats.hp}</div>
+                        <div class="stat-item">ATK: ${stats.atk}</div>
+                        <div class="stat-item">Speed: ${stats.speed}</div>
+                        <div class="stat-item">Frequency: ${stats.frequency}</div>
+                        <div class="stat-item">Range: ${stats.attackRange}</div>
+                        <div class="stat-item">Cost: ${char.cost}</div>
+                    </div>
+                </div>
+            `;
+        });
+        levelStats.innerHTML = statsHTML;
+
+        // Show popup
+        popup.style.display = 'block';
+    }
+
+    // --- Add Popup Close Handlers ---
+    const closeButton = document.querySelector('.close-popup');
+    const popup = document.getElementById('character-info-popup');
+    
+    closeButton.addEventListener('click', () => {
+        popup.style.display = 'none';
+    });
+
+    // Close popup when clicking outside
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.style.display = 'none';
         }
     });
 

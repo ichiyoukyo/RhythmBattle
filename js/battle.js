@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const CANVAS_WIDTH = canvas.width;
     const CANVAS_HEIGHT = canvas.height;
 
+    // Add these image state variables
+    let backgroundImage = null;
+    window.characterSprites = {};
+
     // --- Game State ---
     let playerUnits = [];
     let enemyUnits = [];
@@ -132,10 +136,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function loadImages() {
+        try {
+            // Load background
+            backgroundImage = new Image();
+            backgroundImage.src = 'assets/images/backgrounds/battle-bg.png';
+            await new Promise((resolve, reject) => {
+                backgroundImage.onload = resolve;
+                backgroundImage.onerror = reject;
+            });
+
+            // Load all character sprites
+            const allCharacterIds = [...selectedTeamIds, ...Object.keys(enemyDataConfig)];
+            for (const id of allCharacterIds) {
+                characterSprites[id] = new Image();
+                // Use different paths for player vs enemy characters
+                const path = id.startsWith('P') ? 
+                    'assets/images/characters/player/' : 
+                    'assets/images/characters/enemies/';
+                characterSprites[id].src = `${path}${id}.png`;
+                await new Promise((resolve, reject) => {
+                    characterSprites[id].onload = resolve;
+                    characterSprites[id].onerror = reject;
+                });
+            }
+            return true;
+        } catch (error) {
+            console.error("Error loading images:", error);
+            return false;
+        }
+    }
 
     // --- Game Functions ---
 
-    // MODIFIED: spawnPlayerUnit now takes a slot index (0-3)
+    // Modify the spawnPlayerUnit function:
     function spawnPlayerUnit(slotIndex) {
         if (gameOver || slotIndex < 0 || slotIndex >= selectedTeamIds.length) return;
 
@@ -150,28 +184,29 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(`Data not found for character ID: ${characterId}`);
             return;
         }
-        // Use Level 1 stats for now (index 0) - ADD LEVELING LATER
-        const level = 0; // Default to level 1
+
+        // Use slotIndex as level (0-3)
+        const level = slotIndex; // Slot 0 = level 1 stats, Slot 1 = level 2 stats, etc.
         if (!baseData.levelStats || !baseData.levelStats[level]) {
             console.error(`Level ${level+1} stats not found for ${characterId}`);
             return;
         }
-        const stats = baseData.levelStats[level];
-        const cost = baseData.cost; // Cost is defined at the base character level
 
+        const stats = baseData.levelStats[level];
+        const cost = baseData.cost;
 
         if (playerEnergy >= cost) {
             playerEnergy -= cost;
-            // Merge base config with level-specific stats
-            const unitConfig = { ...stats, cost: cost }; // Pass all needed stats
+            const unitConfig = { ...stats, cost: cost };
 
-            // Spawn near player base
+            // Add level information to the unit for display purposes
+            unitConfig.level = level + 1; // Convert to 1-based level number
+
             const newUnit = new Unit(characterId, unitConfig, playerBase.x + playerBase.width + 5, 0, 'player', CANVAS_HEIGHT);
             playerUnits.push(newUnit);
-            console.log(`Spawned ${baseData.name} from slot ${slotIndex + 1}. Energy left: ${playerEnergy}`);
+            console.log(`Spawned Level ${level+1} ${baseData.name} from slot ${slotIndex + 1}. Energy left: ${playerEnergy}`);
         } else {
             console.log(`Not enough energy for ${baseData.name}. Need ${cost}, have ${Math.floor(playerEnergy)}`);
-            // Add UI feedback for insufficient energy later
         }
     }
 
@@ -227,9 +262,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear canvas
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        // Draw background (simple color for MVP)
-        ctx.fillStyle = '#f0f0f0'; // Light grey
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        // Draw background
+        if (backgroundImage) {
+            ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        } else {
+            // Fallback to original color
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        }
 
         // Draw Bases
         playerBase.draw(ctx);
@@ -301,45 +341,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // NEW: Add dynamic HTML buttons for summoning based on team
+    // Modify the setupSummonControls function to show level information:
     function setupSummonControls() {
-        const controlsContainerId = 'summon-controls-container';
-        // Use querySelector for potentially more flexibility if needed, or stick with getElementById
-        const controlsDiv = document.getElementById(controlsContainerId);
+        const controlsDiv = document.getElementById('summon-controls-container');
+        if (!controlsDiv) return;
 
-        // Ensure the container exists in the HTML
-        if (!controlsDiv) {
-            console.error("CRITICAL: Summon controls container div with ID '" + controlsContainerId + "' not found in battle.html!");
-            return; // Stop if container is missing
-        }
-
-        controlsDiv.innerHTML = ''; // Clear previous buttons (e.g., on restart)
+        controlsDiv.innerHTML = '';
 
         for (let i = 0; i < selectedTeamIds.length; i++) {
             const charId = selectedTeamIds[i];
-            if (!charId) continue; // Skip empty slots in team
+            if (!charId) continue;
+            
             const charBaseData = fullCharacterData[charId];
-            if (!charBaseData) {
-                console.warn(`Data for character ID ${charId} in slot ${i+1} not found.`);
-                continue; // Skip if data is missing for this ID
-            }
+            if (!charBaseData) continue;
 
+            const level = i + 1; // Convert to 1-based level number
+            const stats = charBaseData.levelStats[i];
+            
             const button = document.createElement('button');
-
-            // **** THIS LINE IS THE KEY ****
-            // **** Ensure it uses BACKTICKS ` ` ****
-            button.textContent = `Summon ${charBaseData.name} (${i+1})`;
-            // **** **** **** **** **** **** ****
-
-            button.title = `Cost: ${charBaseData.cost}`;
-            button.style.padding = '10px';
+            button.textContent = `Lv.${level} ${charBaseData.name} (${i+1})`;
+            button.title = `Level ${level}\nHP: ${stats.hp} ATK: ${stats.atk}\nCost: ${charBaseData.cost}`;
             button.onclick = () => spawnPlayerUnit(i);
-            button.disabled = true; // Start disabled, enabled in init()
+            button.disabled = true;
             button.classList.add('summon-button');
             controlsDiv.appendChild(button);
         }
     }
-
 
     function gameLoop(timestamp) {
         if (!lastTime) {
@@ -359,19 +386,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function init() { // Make init async to wait for data loading
+    async function init() {
         console.log("Initializing battle...");
-
-        // Initially disable any existing summon buttons (e.g., during restart)
-        document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = true);
-
+        
+        // Load game data
         const dataLoaded = await loadGameData();
         if (!dataLoaded) {
-            console.error("Initialization failed due to data loading errors.");
-            // Maybe display a persistent error message on screen
+            console.error("Failed to load game data");
+            return;
+        }
+        
+        // Load images
+        const imagesLoaded = await loadImages();
+        if (!imagesLoaded) {
+            console.error("Failed to load images");
             return;
         }
 
+        // Initially disable any existing summon buttons (e.g., during restart)
+        document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = true);
 
         playerBase = createBase('player');
         enemyBase = createBase('enemy');
