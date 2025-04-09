@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      draggable="false"
                      onerror="this.src='assets/images/placeholder.png'; this.alt='Image not found'"> 
                 <span class="name">${char.name}</span>
-                <span class="cost">Cost: ${char.cost}</span>
             `;
 
             // Modified click handler - remove the draggable check
@@ -179,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
         const descEl = document.createElement('p');
         descEl.className = 'char-desc';
-        descEl.textContent = char.description;
+        // descEl.textContent = char.description;
     
         const statsDiv = document.createElement('div');
         statsDiv.className = 'char-stats';

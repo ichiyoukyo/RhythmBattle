@@ -1,82 +1,82 @@
 {
   "P001": {
     "name": "Riffang",
-    "role": "Melee Attacker (Direct Hit)",
+    "role": "Role: Melee Attacker (Direct Hit)",
     "motto": "Every note carries his soul — that is his artistic creed.",
-    "description": " Riffang is a rhythm-driven wild wolf who treats his electric guitar as both instrument and weapon. When the music gets intense, so does he—he gets so hyped up that he can’t help but swing his guitar like a hammer.",
+    "description": "BG: Riffang is a rhythm-driven wild wolf who treats his electric guitar as both instrument and weapon. When the music gets intense, so does he—he gets so hyped up that he can’t help but swing his guitar like a hammer.",
     "image": "assets/images/characters/player/P001.png",
     "cost": 50,
     "levelStats": [
-      { "hp": 300, "atk": 60, "speed": 50, "frequency": 100, "attackRange": 50 },
-      { "hp": 500, "atk": 80, "speed": 50, "frequency": 110, "attackRange": 50 },
-      { "hp": 700, "atk": 100, "speed": 50, "frequency": 115, "attackRange": 50 },
-      { "hp": 900, "atk": 150, "speed": 50, "frequency": 120, "attackRange": 50 }
+      { "hp": 300, "atk": 120, "speed": 85, "frequency": 100, "attackRange": 40, "cost": 60, "Cooldown": 3},
+      { "hp": 380, "atk": 150, "speed": 85, "frequency": 110, "attackRange": 40, "cost": 75, "Cooldown": 5},
+      { "hp": 450, "atk": 180, "speed": 90, "frequency": 120, "attackRange": 45, "cost": 95, "Cooldown": 7},
+      { "hp": 550, "atk": 220, "speed": 95, "frequency": 130, "attackRange": 50, "cost": 120, "Cooldown": 10}
     ]
   },
   "P002": {
     "name": "KameBoom",
     "role": "Role: Frontline Defender (Pure Tank)",
-    "description": "KameBoom is a slow-moving but rock-solid turtle who specializes in taking damage for the team. While others play to the rhythm, he is the wall that keeps the beat going.",
+    "description": "BG: KameBoom is a slow-moving but rock-solid turtle who specializes in taking damage for the team. While others play to the rhythm, he is the wall that keeps the beat going.",
     "image": "assets/images/characters/player/P002.png",
     "cost": 75,
     "levelStats": [
-      { "hp": 500, "atk": 80, "speed": 40, "frequency": 80, "attackRange": 60 },
-      { "hp": 750, "atk": 100, "speed": 40, "frequency": 85, "attackRange": 60 },
-      { "hp": 1000, "atk": 120, "speed": 40, "frequency": 90, "attackRange": 60 },
-      { "hp": 1300, "atk": 160, "speed": 40, "frequency": 95, "attackRange": 60 }
+      { "hp": 500, "atk": 60, "speed": 30, "frequency": 60, "attackRange": 40, "cost": 50, "Cooldown": 3},
+      { "hp": 700, "atk": 80, "speed": 30, "frequency": 65, "attackRange": 40, "cost": 65, "Cooldown": 5},
+      { "hp": 900, "atk": 100, "speed": 30, "frequency": 70, "attackRange": 45, "cost": 85, "Cooldown": 7},
+      { "hp": 1100, "atk": 130, "speed": 30, "frequency": 75, "attackRange": 50, "cost": 110, "Cooldown": 10}
     ]
   },
   "P003": {
     "name": "Lyrena",
     "role": "Role: Healer (Melody Guardian)",
     "motto":"Her harp doesn’t just play music — it sings life back into the world.",
-    "description": "Lyrena is a gentle forest fairy who channels the rhythm of life through her golden harp. With every string she plucks, she releases waves of soothing energy that restore her allies' strength and calm the battlefield.",
+    "description": "BG: Lyrena is a gentle forest fairy who channels the rhythm of life through her golden harp. With every string she plucks, she releases waves of soothing energy that restore her allies' strength and calm the battlefield.",
     "image": "assets/images/characters/player/P003.png",
     "cost": 60,
     "levelStats": [
-      { "hp": 200, "atk": 70, "speed": 80, "frequency": 120, "attackRange": 45 },
-      { "hp": 250, "atk": 90, "speed": 85, "frequency": 130, "attackRange": 45 },
-      { "hp": 300, "atk": 110, "speed": 90, "frequency": 140, "attackRange": 45 },
-      { "hp": 350, "atk": 140, "speed": 95, "frequency": 150, "attackRange": 45 }
+      { "hp": 250, "atk": 0, "speed": 70, "frequency": 100, "attackRange": 120, "cost": 60, "Cooldown": 3},
+      { "hp": 320, "atk": 0, "speed": 70, "frequency": 110, "attackRange": 130, "cost": 75, "Cooldown": 5},
+      { "hp": 400, "atk": 0, "speed": 75, "frequency": 120, "attackRange": 140, "cost": 95, "Cooldown": 7},
+      { "hp": 480, "atk": 0, "speed": 75, "frequency": 130, "attackRange": 150, "cost": 120, "Cooldown": 10}
     ]
   },
   "P004": {
     "name": "Arctondo",
     "role":"Role: Long-Range Attacker (Sound Sniper)",
-    "description": "Arctondo is a calm and composed violinist, a sound sniper who manipulates notes like blades to pierce enemies from afar. His obsession with perfect pitch is so strong that he occasionally forgets to pay attention to what's happening around him.",
+    "description": "BG: Arctondo is a calm and composed violinist, a sound sniper who manipulates notes like blades to pierce enemies from afar. His obsession with perfect pitch is so strong that he occasionally forgets to pay attention to what's happening around him.",
     "image": "assets/images/characters/player/P004.png",
     "cost": 65,
     "levelStats": [
-      { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
-      { "hp": 300, "atk": 120, "speed": 30, "frequency": 75, "attackRange": 125 },
-      { "hp": 350, "atk": 150, "speed": 30, "frequency": 80, "attackRange": 130 },
-      { "hp": 400, "atk": 200, "speed": 30, "frequency": 85, "attackRange": 140 }
+      { "hp": 280, "atk": 100, "speed": 60, "frequency": 90, "attackRange": 150, "cost": 60, "Cooldown": 3},
+      { "hp": 350, "atk": 130, "speed": 60, "frequency": 95, "attackRange": 160, "cost": 75, "Cooldown": 5},
+      { "hp": 420, "atk": 160, "speed": 65, "frequency": 100, "attackRange": 170, "cost": 95, "Cooldown": 7},
+      { "hp": 500, "atk": 200, "speed": 70, "frequency": 105, "attackRange": 180, "cost": 120, "Cooldown": 10}
     ]
   },
   "P005": {
-    "name": "Migerr",
+    "name": "Miger",
     "role": "Role: Melee Attacker",
-    "description": "Miger is a fierce tiger MC from the wild side of the rhythm jungle. With a mic clenched in his paw like a weapon, he charges into enemies spitting ferocious rhymes and dropping lyrical punches.",
+    "description": "BG: Miger is a fierce tiger MC from the wild side of the rhythm jungle. With a mic clenched in his paw like a weapon, he charges into enemies spitting ferocious rhymes and dropping lyrical punches.",
     "image": "assets/images/characters/player/P005.png",
     "cost": 65,
     "levelStats": [
-      { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
-      { "hp": 300, "atk": 120, "speed": 30, "frequency": 75, "attackRange": 125 },
-      { "hp": 350, "atk": 150, "speed": 30, "frequency": 80, "attackRange": 130 },
-      { "hp": 400, "atk": 200, "speed": 30, "frequency": 85, "attackRange": 140 }
+      { "hp": 350, "atk": 100, "speed": 80, "frequency": 110, "attackRange": 45, "cost": 55, "Cooldown": 3},
+      { "hp": 440, "atk": 130, "speed": 85, "frequency": 120, "attackRange": 50, "cost": 70, "Cooldown": 5},
+      { "hp": 520, "atk": 160, "speed": 90, "frequency": 130, "attackRange": 55, "cost": 90, "Cooldown": 7},
+      { "hp": 600, "atk": 200, "speed": 95, "frequency": 140, "attackRange": 60, "cost": 115, "Cooldown": 10}
     ]
   },
   "P006": {
     "name": "Melody",
     "role": "Role: Long-Range Attacker",
-    "description": "Melody Bun is a drum-infused rabbit who specializes in ranged rhythm attacks. Her powerful bass beats travel across the battlefield, knocking back enemies with precise timing. With every hop, she brings the beat—and the boom!",
+    "description": "BG: Melody Bun is a drum-infused rabbit who specializes in ranged rhythm attacks. Her powerful bass beats travel across the battlefield, knocking back enemies with precise timing. With every hop, she brings the beat—and the boom!",
     "image": "assets/images/characters/player/P006.png",
     "cost": 65,
     "levelStats": [
-      { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
-      { "hp": 300, "atk": 120, "speed": 30, "frequency": 75, "attackRange": 125 },
-      { "hp": 350, "atk": 150, "speed": 30, "frequency": 80, "attackRange": 130 },
-      { "hp": 400, "atk": 200, "speed": 30, "frequency": 85, "attackRange": 140 }
+      { "hp": 250, "atk": 90, "speed": 75, "frequency": 100, "attackRange": 130, "cost": 55, "Cooldown": 3},
+      { "hp": 300, "atk": 110, "speed": 75, "frequency": 110, "attackRange": 140, "cost": 70, "Cooldown": 5},
+      { "hp": 350, "atk": 140, "speed": 80, "frequency": 120, "attackRange": 150, "cost": 90, "Cooldown": 7},
+      { "hp": 420, "atk": 180, "speed": 85, "frequency": 130, "attackRange": 160, "cost": 115, "Cooldown": 10}
     ]
   }
 }
