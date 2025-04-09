@@ -8,7 +8,7 @@ export const stages = {
         bgm: {
             path: 'assets/music/bgm-2.mp3',
             bpm: 120,
-            offset: 0.70,
+            offset: 0.75,
             volume: 0.75
         },
         enemyBase: {

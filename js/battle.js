@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to state variables section
     let isPaused = false;
 
+    // Add to state variables section
+    let victoryImage = null;
+    let defeatImage = null;
+
     // --- Game State ---
     let playerUnits = [];
     let enemyUnits = [];
@@ -266,6 +270,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     characterSprites[id].onerror = reject;
                 });
             }
+
+            // Load victory/defeat UI images
+            victoryImage = new Image();
+            victoryImage.src = 'assets/images/ui/you_win.png';
+            await new Promise((resolve, reject) => {
+                victoryImage.onload = resolve;
+                victoryImage.onerror = reject;
+            });
+
+            // TODO: Add defeat image if you have one
+            defeatImage = new Image();
+            defeatImage.src = 'assets/images/ui/you_lose.png';  // Adjust path if different
+            await new Promise((resolve, reject) => {
+                defeatImage.onload = resolve;
+                defeatImage.onerror = reject;
+            });
+
             return true;
         } catch (error) {
             console.error("Error loading images:", error);
@@ -888,15 +909,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw Game Over / Win Message (keep existing logic)
         // Draw Game Over / Win Message
         if (gameOver) {
+            // Dark overlay
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            ctx.font = '40px Arial';
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            if (gameWon) {
-                ctx.fillText('VICTORY!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-            } else {
-                ctx.fillText('DEFEAT!', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+
+            // Draw victory/defeat image
+            const resultImage = gameWon ? victoryImage : defeatImage;
+            if (resultImage) {
+                // Calculate position to center the image
+                const imageWidth = CANVAS_WIDTH * 0.5;  // Use 50% of canvas width
+                const imageHeight = imageWidth * (resultImage.height / resultImage.width);
+                const x = (CANVAS_WIDTH - imageWidth) / 2;
+                const y = (CANVAS_HEIGHT - imageHeight) / 2;
+
+                ctx.drawImage(resultImage, x, y, imageWidth, imageHeight);
             }
         }
     }
