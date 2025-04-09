@@ -126,26 +126,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Update Slot Appearance and Data ---
+    // function updateSlot(slotElement, slotIndex, characterId) {
+    //     const char = characterData[characterId];
+    //     if (!char) return;
+
+    //     // Clear previous content except the remove button
+    //     const removeBtn = slotElement.querySelector('.remove-btn');
+    //     slotElement.innerHTML = ''; // Clear everything
+    //     if(removeBtn) slotElement.appendChild(removeBtn); // Re-add the button
+
+    //     // Add new character image
+    //     const img = document.createElement('img');
+    //     img.src = char.image;
+    //     img.alt = char.name;
+    //     img.onerror = () => { img.src = 'assets/images/placeholder.png'; img.alt = 'Image not found'; };
+    //     slotElement.appendChild(img);
+    //     slotElement.classList.add('filled');
+
+    //     // Store the selected character ID
+    //     selectedTeam[slotIndex] = characterId;
+    //     // console.log("Selected Team:", selectedTeam);
+    //     checkTeamValidity();
+    // }
     function updateSlot(slotElement, slotIndex, characterId) {
         const char = characterData[characterId];
         if (!char) return;
-
-        // Clear previous content except the remove button
-        const removeBtn = slotElement.querySelector('.remove-btn');
-        slotElement.innerHTML = ''; // Clear everything
-        if(removeBtn) slotElement.appendChild(removeBtn); // Re-add the button
-
-        // Add new character image
+    
+        slotElement.classList.add('filled');
+        slotElement.innerHTML = '';
+    
         const img = document.createElement('img');
         img.src = char.image;
         img.alt = char.name;
-        img.onerror = () => { img.src = 'assets/images/placeholder.png'; img.alt = 'Image not found'; };
+        img.onerror = () => {
+            img.src = 'assets/images/placeholder.png';
+            img.alt = 'Image not found';
+        };
         slotElement.appendChild(img);
-        slotElement.classList.add('filled');
-
-        // Store the selected character ID
+    
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.addEventListener('click', () => clearSlot(slotElement, slotIndex));
+        slotElement.appendChild(removeBtn);
+    
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'slot-info';
+    
+        const nameEl = document.createElement('h4');
+        nameEl.className = 'char-name';
+        nameEl.textContent = char.name;
+    
+        const descEl = document.createElement('p');
+        descEl.className = 'char-desc';
+        descEl.textContent = char.description;
+    
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'char-stats';
+    
+        if (char.levelStats && Array.isArray(char.levelStats)) {
+            const stats = char.levelStats[slotIndex]; // 只取对应 slotIndex 的等级
+            if (stats) {
+                const stat = document.createElement('div');
+                stat.textContent = `Lv${slotIndex + 1} - HP:${stats.hp}, ATK:${stats.atk}, SPD:${stats.speed}, FREQ:${stats.frequency}, RNG:${stats.attackRange}, COST:${char.cost}`;
+                statsDiv.appendChild(stat);
+            }
+        }
+    
+        infoDiv.appendChild(nameEl);
+        infoDiv.appendChild(descEl);
+        infoDiv.appendChild(statsDiv);
+        slotElement.appendChild(infoDiv);
+    
         selectedTeam[slotIndex] = characterId;
-        // console.log("Selected Team:", selectedTeam);
         checkTeamValidity();
     }
 
@@ -252,7 +305,19 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.style.display = 'none';
         }
     });
-
+    
+    document.getElementById('next-tutorial-step').addEventListener('click', () => {
+        currentStep++;
+        if (currentStep < tutorialSteps.length) {
+            showTutorialStep(currentStep);
+        } else {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+        }
+    });
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => showTutorialStep(0), 300); // 稍后显示第一步
+    });
     // --- Initialize ---
     loadCharacterData();
 
