@@ -1,138 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rhythm Battle - Home</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    body {
-        font-family: sans-serif;
-        text-align: center;
-        padding-top: 50px;
-        background: url('assets/images/backgrounds/opening.png') no-repeat center center fixed;
-        background-size: contain;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        background-position: center center;
-        color: white;
-        
-    }
-    body.fade-out {
-        opacity: 0;
-        transition: opacity 0.9s ease;
-    }
-    .button {
-      display: inline-block;
-      padding: 30px 60px;
-      margin-top: 20px;
-      background-color: #4CAF50;
-      color: white;
-      text-decoration: none;
-      border: none;
-      border-radius: 5px;
-      font-size: 1.2em;
-      cursor: pointer;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Battle - Home</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            background: url('assets/images/backgrounds/opening.png') no-repeat center center fixed;
+            background-size: contain;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: white;
 
-    .button:hover {
-      background-color: #45a049;
-    }
-    .animated-button {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: pulse 0.5s infinite ease-in-out;
-    display: inline-block;
-    }
+        }
 
-    .animated-button img {
-    width: 650px;
-    transition: transform 0.2s ease;
-    }
+        body.fade-out {
+            opacity: 0;
+            transition: opacity 0.9s ease;
+        }
 
-    /* 鼠标悬停时放大且更有节奏感 */
-    .animated-button:hover {
-    animation: pulse-hover 0.1s infinite ease-in-out;
-    }
+        .button {
+            display: inline-block;
+            padding: 30px 60px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
 
-    .animated-button:hover img {
-    transform: scale(1.08);
-    }
+        .button:hover {
+            background-color: #45a049;
+        }
 
-    /* 点击瞬间弹缩效果 */
-    .animated-button:active img {
-    transform: scale(0.95);
-    }
+        .animated-button {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: pulse 0.5s infinite ease-in-out;
+            display: inline-block;
+        }
 
-    /* 默认跳动 */
-    @keyframes pulse {
-    0%   { transform: translateX(-50%) scale(1); }
-    50%  { transform: translateX(-50%) scale(1.05); }
-    100% { transform: translateX(-50%) scale(1); }
-    }
+        .animated-button img {
+            width: 650px;
+            transition: transform 0.2s ease;
+        }
 
-    /* 悬停跳动加强版 */
-    @keyframes pulse-hover {
-    0%   { transform: translateX(-50%) scale(1.02); }
-    50%  { transform: translateX(-50%) scale(1.12); }
-    100% { transform: translateX(-50%) scale(1.02); }
-    }
+        /* 鼠标悬停时放大且更有节奏感 */
+        .animated-button:hover {
+            animation: pulse-hover 0.1s infinite ease-in-out;
+        }
 
-  </style>
+        .animated-button:hover img {
+            transform: scale(1.08);
+        }
+
+        /* 点击瞬间弹缩效果 */
+        .animated-button:active img {
+            transform: scale(0.95);
+        }
+
+        /* 默认跳动 */
+        @keyframes pulse {
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.05);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        /* 悬停跳动加强版 */
+        @keyframes pulse-hover {
+            0% {
+                transform: translateX(-50%) scale(1.02);
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.12);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1.02);
+            }
+        }
+    </style>
 </head>
+
 <body>
-<!-- 
+    <!-- 
   <h1>Welcome to Rhythm Battle!</h1>
   <p>Get ready to battle with the beat!</p> -->
 
-  <a href="team.html" class="animated-button" id="start-btn">
-    <img src="assets/images/backgrounds/ChatGPT Image Apr 9, 2025, 02_07_11 PM.png" alt="Select Team & Start">
-  </a>
-  
-  <audio id="click-sound" src="assets/music/982.wav" preload="auto"></audio>
-  
-  
+    <a href="team.html" class="animated-button" id="start-btn">
+        <img src="assets/images/backgrounds/ChatGPT Image Apr 9, 2025, 02_07_11 PM.png" alt="Select Team & Start">
+    </a>
 
-  
-  <audio id="bg-music" src="assets/music/opening_song.mp3" loop autoplay></audio>
+    <audio id="click-sound" src="assets/music/982.wav" preload="auto"></audio>
 
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const bgm = document.getElementById('bg-music');
-      const enableAudio = () => {
-        if (bgm.paused) {
-          bgm.volume = 0.6;
-          bgm.play().catch(e => console.warn('Autoplay blocked:', e));
-        }
-        window.removeEventListener('click', enableAudio);
-      };
-      window.addEventListener('click', enableAudio);
-    });
-  </script>
-<script>
-    const clickSound = document.getElementById('click-sound');
-    const startBtn = document.getElementById('start-btn');
-  
-    startBtn.addEventListener('click', (e) => {
-      e.preventDefault(); // 防止立即跳转
-  
-      // 播放点击音效
-      clickSound.volume = 0.8;
-      clickSound.currentTime = 0;
-      clickSound.play().catch(err => console.warn('Click sound blocked:', err));
-  
-      // 添加渐变样式
-      document.body.classList.add('fade-out');
-  
-      // 延迟跳转，确保声音播放
-      setTimeout(() => {
-        window.location.href = startBtn.href;
-      }, 900); // 900ms 取决于音效长度
-    });
-  </script>
-  
-  
+    <audio id="bg-music" src="assets/music/opening_song.mp3" loop autoplay></audio>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const bgm = document.getElementById('bg-music');
+            const enableAudio = () => {
+                if (bgm.paused) {
+                    bgm.volume = 0.6;
+                    bgm.play().catch(e => console.warn('Autoplay blocked:', e));
+                }
+                window.removeEventListener('click', enableAudio);
+            };
+            window.addEventListener('click', enableAudio);
+        });
+    </script>
+
+    <script>
+        const clickSound = document.getElementById('click-sound');
+        const startBtn = document.getElementById('start-btn');
+
+        startBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // 防止立即跳转
+
+            // 播放点击音效
+            clickSound.volume = 0.8;
+            clickSound.currentTime = 0;
+            clickSound.play().catch(err => console.warn('Click sound blocked:', err));
+
+            // 添加渐变样式
+            document.body.classList.add('fade-out');
+
+            // 延迟跳转，确保声音播放
+            setTimeout(() => {
+                window.location.href = startBtn.href;
+            }, 900); // 900ms 取决于音效长度
+        });
+    </script>
+
+
 </body>
+
 </html>

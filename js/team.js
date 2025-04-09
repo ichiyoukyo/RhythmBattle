@@ -314,17 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
             targetSelector: "#available-characters"
         },
         {
-            text: "Drag a character from here into a slot.",
+            text: "Drag a character from here into a slot. Click the character to see more details.",
             targetSelector: "#available-characters"
         },
         {
-            text: "Drop the character here to add them to your team. Different characters have different stats.",
+            text: "Drop the character here to add them to your team. Different characters have different stats. ",
             targetSelector: "#slot-0"
-        },
-        {
-            text: "Click this button when your team is ready!",
-            targetSelector: "#start-battle-btn"
         }
+        // {
+        //     text: "Click this button when your team is ready!",
+        //     targetSelector: "#start-battle-btn"
+        // }
     ];
     function showTutorialStep(index) {
         const step = tutorialSteps[index];
