@@ -1,112 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rhythm Battle - Select Team</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
     <style>
         /* Basic button styling for the link */
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            background-color: #007BFF;
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: url('assets/images/backgrounds/select-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             color: white;
-            text-decoration: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3.8em;
+            margin: 40px 0 10px;
+            background: linear-gradient(to right, #00f2ff, #a500ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.2);
+            animation: titlePulse 3s infinite ease-in-out;
+        }
+
+        .button {
+            font-family: inherit;
+            background: linear-gradient(to right, #007BFF, #00e0ff);
+            color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00e0ff;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px 5px;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .character-item {
+            background: linear-gradient(to bottom right, rgba(0, 255, 255, 0.1), rgba(0, 0, 0, 0.4));
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 8px;
+            width: 100px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
         }
-        .button:hover {
-            background-color: #0056b3;
-        }
-        .button-back {
-            background-color: #6c757d;
-        }
-        .button-back:hover {
-            background-color: #5a6268;
-        }
-        .button:disabled {
-             background-color: #cccccc;
-             cursor: not-allowed;
-        }
-        body { font-family: sans-serif; padding: 20px; }
-        .container { display: flex; justify-content: space-around; margin-top: 20px; }
 
-        /* Available Characters List */
-        #available-characters {
-            width: 60%;
-            border: 1px solid #ccc;
-            padding: 10px;
-            min-height: 300px;
-            background-color: #f9f9f9;
-            display: flex; /* Use flexbox for wrapping */
-            flex-wrap: wrap; /* Allow items to wrap */
-            gap: 10px; /* Space between items */
-            align-content: flex-start; /* Align items to the start vertically */
+        .character-item:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 16px rgba(0, 255, 255, 0.6);
         }
-        .character-item {
-            border: 1px solid #eee;
-            padding: 5px;
-            text-align: center;
-            cursor: grab;
-            background-color: white;
-            width: 100px; /* Fixed width */
-            height: 130px; /* Fixed height */
+
+        .character-item img {
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .container {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            margin: 40px auto;
+            max-width: 1200px;
         }
-        .character-item:active { cursor: grabbing; }
-        .character-item img { max-width: 80px; max-height: 80px; display: block; margin: 0 auto; }
-        .character-item .name { font-weight: bold; font-size: 0.9em; }
-        .character-item .cost { font-size: 0.8em; color: #555; }
 
-        /* Team Slots Area */
-        #team-selection { width: 35%; }
+        #available-characters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-start;
+            align-content: flex-start;
+            max-width: 360px;
+        }
+
+        #team-selection {
+            flex: 1;
+        }
+
         #team-slots {
             display: flex;
-            flex-direction: column; /* Stack slots vertically */
-            gap: 15px; /* Space between slots */
+            flex-direction: column;
+            gap: 15px;
         }
+
         .slot {
-            width: 120px; /* Slightly larger slot */
-            height: 140px;
-            border: 2px dashed #aaa;
-            display: flex;
+            display: inline-flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
+            padding: 10px;
+            min-width: 130px;
+            height: auto;
+            border: 2px dashed #00e0ff;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(6px);
             color: #aaa;
             font-size: 0.9em;
-            position: relative; /* For positioning remove button */
-            background-color: #f0f0f0;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            word-wrap: break-word;
+            text-align: center;
         }
-        .slot.over { border-style: solid; border-color: #007BFF; background-color: #e9f5ff; } /* Highlight on drag over */
-        .slot img { max-width: 100px; max-height: 100px; }
+
+        .slot.over {
+            border-style: solid;
+            border-color: #00ffff;
+            background-color: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .slot.filled img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+        }
+
         .slot .remove-btn {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            background-color: rgba(255, 0, 0, 0.7);
+            top: 4px;
+            right: 4px;
+            background: rgba(255, 0, 0, 0.7);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            line-height: 16px;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            line-height: 20px;
             cursor: pointer;
-            display: none; /* Hidden by default */
+            display: none;
         }
-        .slot.filled .remove-btn { display: block; } /* Show when filled */
-        .slot.filled .placeholder-text { display: none; } /* Hide placeholder text */
+
+        .slot.filled .remove-btn {
+            display: block;
+        }
+
+        .slot.filled .placeholder-text {
+            display: none;
+        }
+
+        @keyframes titlePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            }
+
+            50% {
+                transform: scale(1.05);
+                text-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+            }
+
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* Slot info panel */
+        .slot-info {
+            flex: 1;
+            font-size: 0.85em;
+            text-align: left;
+            background-color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+            color: #333;
+        }
+
+        .slot-info h4 {
+            margin: 0 0 5px 0;
+            font-size: 1em;
+        }
+
+        .slot-info p {
+            margin: 4px 0;
+            font-size: 0.85em;
+            color: #555;
+        }
+
+        .slot-info .char-stats div {
+            margin-bottom: 4px;
+            font-size: 0.8em;
+        }
+
 
         /* Dragging feedback */
-        .dragging { opacity: 0.5; border: 2px dashed red; }
+        .dragging {
+            opacity: 0.5;
+            border: 2px dashed red;
+        }
 
         /* Popup Styles */
         .popup-overlay {
@@ -128,7 +231,7 @@
             margin: 50px auto;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         }
 
         .close-popup {
@@ -185,57 +288,206 @@
         .stat-item {
             font-size: 0.9em;
         }
+
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+        }
+
+        #tutorial-highlight {
+            position: absolute;
+            border: 3px solid yellow;
+            border-radius: 8px;
+            box-shadow: 0 0 10px yellow;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        #tutorial-tooltip {
+            position: absolute;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px black;
+            max-width: 300px;
+            color: black;
+            z-index: 2100;
+        }
+
+        #tutorial-tooltip p {
+            margin: 0 0 10px 0;
+        }
+
+        #next-tutorial-step {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #skip-tutorial {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
 
-<h1>Select Your Team</h1>
-<p>Drag characters from the list on the left to the slots on the right.</p>
+    <h1>Select Your Team</h1>
+    <p>Drag characters from the list on the left to the slots on the right.</p>
+    <audio id="bg-music" src="assets/audio/selection_bgm.mp3" loop autoplay></audio>
 
-<div class="container">
-    <div id="available-characters-container">
-        <h2>Available Characters</h2>
-        <div id="available-characters">
-        </div>
-    </div>
-
-    <div id="team-selection">
-        <h2>Your Team</h2>
-        <div id="team-slots">
-            <div class="slot" id="slot-0" data-slot-index="0"><span class="placeholder-text">Slot 1</span></div>
-            <div class="slot" id="slot-1" data-slot-index="1"><span class="placeholder-text">Slot 2</span></div>
-            <div class="slot" id="slot-2" data-slot-index="2"><span class="placeholder-text">Slot 3</span></div>
-            <div class="slot" id="slot-3" data-slot-index="3"><span class="placeholder-text">Slot 4</span></div>
-        </div>
-    </div>
-</div>
-
-<div style="text-align: center; margin-top: 30px;">
-    <button id="start-battle-btn" class="button" disabled>Start Battle</button>
-    <a href="index.html" class="button button-back">Back to Home</a>
-</div>
-
-<!-- Character Info Popup -->
-<div id="character-info-popup" class="popup-overlay">
-    <div class="popup-content">
-        <button class="close-popup">&times;</button>
-        <div class="popup-grid">
-            <div class="character-image">
-                <img id="popup-char-image" src="" alt="Character">
+    <div class="container">
+        <div id="available-characters-container">
+            <h2>Available Characters</h2>
+            <div id="available-characters">
             </div>
-            <div class="character-info">
-                <h2 id="popup-char-name"></h2>
-                <p id="popup-char-description"></p>
-                <div class="stats-container">
-                    <h3>Stats by Level:</h3>
-                    <div id="level-stats"></div>
+        </div>
+
+        <div id="team-selection">
+            <h2>Your Team</h2>
+            <div id="team-slots">
+                <div class="slot" id="slot-0" data-slot-index="0">
+                    <span class="placeholder-text">Slot 1</span>
+                    <button class="remove-btn">&times;</button>
+                    <div class="slot-info" style="display: none;">
+                        <h4 class="char-name"></h4>
+                        <p class="char-desc"></p>
+                        <div class="char-stats"></div>
+                    </div>
+                </div>
+
+                <div class="slot" id="slot-1" data-slot-index="1">
+                    <span class="placeholder-text">Slot 2</span>
+                    <button class="remove-btn">&times;</button>
+                    <div class="slot-info" style="display: none;">
+                        <h4 class="char-name"></h4>
+                        <p class="char-desc"></p>
+                        <div class="char-stats"></div>
+                    </div>
+                </div>
+                <div class="slot" id="slot-2" data-slot-index="2">
+                    <span class="placeholder-text">Slot 3</span>
+                    <button class="remove-btn">&times;</button>
+                    <div class="slot-info" style="display: none;">
+                        <h4 class="char-name"></h4>
+                        <p class="char-desc"></p>
+                        <div class="char-stats"></div>
+                    </div>
+                </div>
+                <div class="slot" id="slot-3" data-slot-index="3">
+                    <span class="placeholder-text">Slot 4</span>
+                    <button class="remove-btn">&times;</button>
+                    <div class="slot-info" style="display: none;">
+                        <h4 class="char-name"></h4>
+                        <p class="char-desc"></p>
+                        <div class="char-stats"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="js/team.js"></script>
+    <div class="container">
+        <div id="available-characters"></div>
+        <div id="team-selection" style="text-align: center;">
+            <div id="team-slots"></div>
+            <div style="margin-top: 20px;"><button id="start-battle-btn" class="button" disabled>Start Battle</button>
+                </button>
+                <a href="index.html" class="button">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Info Popup -->
+    <div id="character-info-popup" class="popup-overlay"
+        style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999;">
+        <div class="popup-content"
+            style="position: relative; margin: 50px auto; padding: 20px; background: #111; border-radius: 10px; width: 80%; max-width: 600px; color: white; box-shadow: 0 0 20px rgba(0,255,255,0.5);">
+            <span class="close-popup"
+                style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: white;">&times;</span>
+            <img id="popup-char-image" src="" alt=""
+                style="max-width: 120px; float: left; margin-right: 20px; border-radius: 8px;">
+            <h2 id="popup-char-name" style="margin-top: 0;"></h2>
+            <div id="popup-char-description" style="margin-bottom: 10px;"></div>
+            <div id="level-stats"></div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <!-- 教学遮罩层 -->
+    <div id="tutorial-overlay" style="display:none;">
+        <div id="tutorial-highlight"></div>
+        <div id="tutorial-tooltip">
+            <p id="tutorial-text">Drag a character to a slot to begin.</p>
+            <button id="next-tutorial-step">Next</button>
+            <button id="skip-tutorial">Skip Tutorial</button>
+        </div>
+    </div>
+
+    <script>
+        const tutorialSteps = [
+            { text: "This is your character list. Click to view info.", selector: "#available-characters" },
+            { text: "Drag characters here to form your team.", selector: "#team-slots" },
+            { text: "Click here to start the battle once ready.", selector: "#start-battle-btn" }
+        ];
+
+        let currentStep = 0;
+
+        function showTutorialStep(index) {
+            const step = tutorialSteps[index];
+            const target = document.querySelector(step.selector);
+            const overlay = document.getElementById('tutorial-overlay');
+            const highlight = document.getElementById('tutorial-highlight');
+            const tooltip = document.getElementById('tutorial-tooltip');
+            const text = document.getElementById('tutorial-text');
+
+            if (!target) return;
+            const rect = target.getBoundingClientRect();
+
+            highlight.style.top = `${rect.top - 5}px`;
+            highlight.style.left = `${rect.left - 5}px`;
+            highlight.style.width = `${rect.width + 10}px`;
+            highlight.style.height = `${rect.height + 10}px`;
+
+            text.textContent = step.text;
+            tooltip.style.top = `${rect.bottom + 15}px`;
+            tooltip.style.left = `${Math.max(rect.left, 20)}px`;
+
+            overlay.style.display = 'block';
+        }
+
+        document.getElementById('next-tutorial-step').addEventListener('click', () => {
+            currentStep++;
+            if (currentStep < tutorialSteps.length) {
+                showTutorialStep(currentStep);
+            } else {
+                document.getElementById('tutorial-overlay').style.display = 'none';
+            }
+        });
+
+        document.getElementById('skip-tutorial').addEventListener('click', () => {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => showTutorialStep(0), 300);
+        });
+    </script>
+    <script src="js/team.js"></script>
 
 </body>
+
 </html>

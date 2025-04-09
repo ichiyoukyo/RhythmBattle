@@ -1,7 +1,9 @@
 {
   "P001": {
-    "name": "Basic Cat",
-    "description": "Fast and cheap attacker.",
+    "name": "Riffang",
+    "role": "Melee Attacker (Direct Hit)",
+    "motto": "Every note carries his soul — that is his artistic creed.",
+    "description": " Riffang is a rhythm-driven wild wolf who treats his electric guitar as both instrument and weapon. When the music gets intense, so does he—he gets so hyped up that he can’t help but swing his guitar like a hammer.",
     "image": "assets/images/characters/player/P001.png",
     "cost": 50,
     "levelStats": [
@@ -12,8 +14,8 @@
     ]
   },
   "P002": {
-    "name": "Tank Cat",
-    "description": "Slow but sturdy.",
+    "name": "KameBoom",
+    "description": "KameBoom is a slow-moving but rock-solid turtle who specializes in taking damage for the team. While others play to the rhythm, he is the wall that keeps the beat going.",
     "image": "assets/images/characters/player/P002.png",
     "cost": 75,
     "levelStats": [
@@ -24,8 +26,9 @@
     ]
   },
   "P003": {
-    "name": "Ninja Cat",
-    "description": "Very fast, low HP.",
+    "name": "Lyrena",
+    "motto":"Her harp doesn’t just play music — it sings life back into the world.",
+    "description": "Lyrena is a gentle forest fairy who channels the rhythm of life through her golden harp. With every string she plucks, she releases waves of soothing energy that restore her allies' strength and calm the battlefield.",
     "image": "assets/images/characters/player/P003.png",
     "cost": 60,
     "levelStats": [
@@ -36,8 +39,8 @@
     ]
   },
   "P004": {
-    "name": "Range Cat",
-    "description": "Long-range attacker with medium HP.",
+    "name": "Arctondo",
+    "description": "Arctondo is a calm and composed violinist, a sound sniper who manipulates notes like blades to pierce enemies from afar. His obsession with perfect pitch is so strong that he occasionally forgets to pay attention to what's happening around him.",
     "image": "assets/images/characters/player/P004.png",
     "cost": 65,
     "levelStats": [
