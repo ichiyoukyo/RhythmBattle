@@ -12,7 +12,7 @@
         /* Basic button styling for the link */
         body {
             font-family: 'Orbitron', sans-serif;
-            background: url('assets/images/backgrounds/select-bg.jpg') no-repeat center center fixed;
+            background: url('assets/images/backgrounds/select-background.png') no-repeat center center fixed;
             background-size: cover;
             color: white;
             margin: 0;
@@ -21,7 +21,7 @@
 
         h1 {
             text-align: center;
-            font-size: 3.8em;
+            font-size: 4.8em;
             margin: 40px 0 10px;
             background: linear-gradient(to right, #00f2ff, #a500ff);
             -webkit-background-clip: text;
@@ -63,15 +63,16 @@
         }
 
         .character-item:hover {
-            transform: scale(1.08);
+            transform: scale(1.18);
             box-shadow: 0 0 16px rgba(0, 255, 255, 0.6);
         }
 
         .character-item img {
             max-width: 100%;
-            max-height: 140px;
+            max-height: 1800px; /* 放大高度 */
             border-radius: 8px;
             margin-bottom: 8px;
+            transition: transform 0.3s ease;
         }
 
         .container {
@@ -84,12 +85,12 @@
         }
 
         #available-characters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: flex-start;
-            align-content: flex-start;
-            max-width: 360px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            justify-items: center;
+            align-items: start;
+            max-width: 540px;
         }
 
         #team-selection {
@@ -104,7 +105,7 @@
 
         .slot {
             display: inline-flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
             padding: 10px;
@@ -340,13 +341,44 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        .drag-tip {
+            font-size: 1.5em;
+            color: #00f0ff;
+            background: rgba(0, 0, 0, 0.5);
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            font-weight: bold;
+            margin: 40px 0 0px 200px;
+            text-align: center;
+            animation: glowTip 2s ease-in-out infinite;
+        }
+
+        @keyframes glowTip {
+            0% {
+                box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+            }
+
+            100% {
+                box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <h1>Select Your Team</h1>
-    <p>Drag characters from the list on the left to the slots on the right.</p>
+    <p class="drag-tip">
+        👉 Drag characters from the list on the left to the slots on the right!
+    </p>
     <audio id="bg-music" src="assets/music/selection_bgm.mp3" loop autoplay></audio>
 
     <div class="container">

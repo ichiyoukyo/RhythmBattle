@@ -15,6 +15,7 @@
   },
   "P002": {
     "name": "KameBoom",
+    "role": "Frontline Defender (Pure Tank)",
     "description": "KameBoom is a slow-moving but rock-solid turtle who specializes in taking damage for the team. While others play to the rhythm, he is the wall that keeps the beat going.",
     "image": "assets/images/characters/player/P002.png",
     "cost": 75,
@@ -40,8 +41,35 @@
   },
   "P004": {
     "name": "Arctondo",
+    "role":"Long-Range Attacker (Sound Sniper)",
     "description": "Arctondo is a calm and composed violinist, a sound sniper who manipulates notes like blades to pierce enemies from afar. His obsession with perfect pitch is so strong that he occasionally forgets to pay attention to what's happening around him.",
     "image": "assets/images/characters/player/P004.png",
+    "cost": 65,
+    "levelStats": [
+      { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
+      { "hp": 300, "atk": 120, "speed": 30, "frequency": 75, "attackRange": 125 },
+      { "hp": 350, "atk": 150, "speed": 30, "frequency": 80, "attackRange": 130 },
+      { "hp": 400, "atk": 200, "speed": 30, "frequency": 85, "attackRange": 140 }
+    ]
+  },
+  "P005": {
+    "name": "Migerr",
+    "role": "Melee Attacker",
+    "description": "Miger is a fierce tiger MC from the wild side of the rhythm jungle. With a mic clenched in his paw like a weapon, he charges into enemies spitting ferocious rhymes and dropping lyrical punches.",
+    "image": "assets/images/characters/player/P005.png",
+    "cost": 65,
+    "levelStats": [
+      { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
+      { "hp": 300, "atk": 120, "speed": 30, "frequency": 75, "attackRange": 125 },
+      { "hp": 350, "atk": 150, "speed": 30, "frequency": 80, "attackRange": 130 },
+      { "hp": 400, "atk": 200, "speed": 30, "frequency": 85, "attackRange": 140 }
+    ]
+  },
+  "P006": {
+    "name": "Melody",
+    "role": "Long-Range Attacker",
+    "description": "Melody Bun is a drum-infused rabbit who specializes in ranged rhythm attacks. Her powerful bass beats travel across the battlefield, knocking back enemies with precise timing. With every hop, she brings the beat—and the boom!",
+    "image": "assets/images/characters/player/P006.png",
     "cost": 65,
     "levelStats": [
       { "hp": 250, "atk": 90, "speed": 30, "frequency": 70, "attackRange": 120 },
