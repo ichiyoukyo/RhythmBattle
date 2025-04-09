@@ -2,12 +2,18 @@
 let inputHistory = [];
 const maxHistoryLength = 15; // Limit history length to prevent memory issues
 
-// Store known patterns to check against
-const knownPatterns = {
+// Make patterns accessible and updatable
+export let knownPatterns = {
     'slot1': ['1', '2', '1', '2'],
     'slot2': ['a', 's', 'a', 's'],
-    'slot3': ['q', 'w', 'e', 'r']
+    'slot3': ['q', 'w', 'e', 'r'],
+    'slot4': ['3', '4', '5', '6']
 };
+
+// Add function to update patterns
+export function updatePatterns(newPatterns) {
+    knownPatterns = { ...newPatterns };
+}
 
 export function recordInput(key, wasSuccessful) {
     if (!wasSuccessful) {

@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      draggable="false"
                      onerror="this.src='assets/images/placeholder.png'; this.alt='Image not found'"> 
                 <span class="name">${char.name}</span>
-                <span class="cost">Cost: ${char.cost}</span>
             `;
 
             // Modified click handler - remove the draggable check
@@ -126,26 +125,79 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Update Slot Appearance and Data ---
+    // function updateSlot(slotElement, slotIndex, characterId) {
+    //     const char = characterData[characterId];
+    //     if (!char) return;
+
+    //     // Clear previous content except the remove button
+    //     const removeBtn = slotElement.querySelector('.remove-btn');
+    //     slotElement.innerHTML = ''; // Clear everything
+    //     if(removeBtn) slotElement.appendChild(removeBtn); // Re-add the button
+
+    //     // Add new character image
+    //     const img = document.createElement('img');
+    //     img.src = char.image;
+    //     img.alt = char.name;
+    //     img.onerror = () => { img.src = 'assets/images/placeholder.png'; img.alt = 'Image not found'; };
+    //     slotElement.appendChild(img);
+    //     slotElement.classList.add('filled');
+
+    //     // Store the selected character ID
+    //     selectedTeam[slotIndex] = characterId;
+    //     // console.log("Selected Team:", selectedTeam);
+    //     checkTeamValidity();
+    // }
     function updateSlot(slotElement, slotIndex, characterId) {
         const char = characterData[characterId];
         if (!char) return;
-
-        // Clear previous content except the remove button
-        const removeBtn = slotElement.querySelector('.remove-btn');
-        slotElement.innerHTML = ''; // Clear everything
-        if(removeBtn) slotElement.appendChild(removeBtn); // Re-add the button
-
-        // Add new character image
+    
+        slotElement.classList.add('filled');
+        slotElement.innerHTML = '';
+    
         const img = document.createElement('img');
         img.src = char.image;
         img.alt = char.name;
-        img.onerror = () => { img.src = 'assets/images/placeholder.png'; img.alt = 'Image not found'; };
+        img.onerror = () => {
+            img.src = 'assets/images/placeholder.png';
+            img.alt = 'Image not found';
+        };
         slotElement.appendChild(img);
-        slotElement.classList.add('filled');
-
-        // Store the selected character ID
+    
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.addEventListener('click', () => clearSlot(slotElement, slotIndex));
+        slotElement.appendChild(removeBtn);
+    
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'slot-info';
+    
+        const nameEl = document.createElement('h4');
+        nameEl.className = 'char-name';
+        nameEl.textContent = char.name;
+    
+        const descEl = document.createElement('p');
+        descEl.className = 'char-desc';
+        // descEl.textContent = char.description;
+    
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'char-stats';
+    
+        if (char.levelStats && Array.isArray(char.levelStats)) {
+            const stats = char.levelStats[slotIndex]; // 只取对应 slotIndex 的等级
+            if (stats) {
+                const stat = document.createElement('div');
+                stat.textContent = `Lv${slotIndex + 1} - HP:${stats.hp}, ATK:${stats.atk}, SPD:${stats.speed}, FREQ:${stats.frequency}, RNG:${stats.attackRange}, COST:${char.cost}`;
+                statsDiv.appendChild(stat);
+            }
+        }
+    
+        infoDiv.appendChild(nameEl);
+        infoDiv.appendChild(descEl);
+        infoDiv.appendChild(statsDiv);
+        slotElement.appendChild(infoDiv);
+    
         selectedTeam[slotIndex] = characterId;
-        // console.log("Selected Team:", selectedTeam);
         checkTeamValidity();
     }
 
@@ -199,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const popup = document.getElementById('character-info-popup');
         const image = document.getElementById('popup-char-image');
         const name = document.getElementById('popup-char-name');
+        const role = document.getElementById('popup-char-role');
         const description = document.getElementById('popup-char-description');
         const levelStats = document.getElementById('level-stats');
 
@@ -210,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set basic info
         image.src = char.image;
         name.textContent = char.name;
+        role.textContent = char.role;
         description.textContent = char.description;
 
         // Generate stats HTML
@@ -253,6 +307,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const tutorialSteps = [
+        {
+            text: "Welcome! Let's learn how to build your team.",
+            targetSelector: "#available-characters"
+        },
+        {
+            text: "Drag a character from here into a slot. Click the character to see more details.",
+            targetSelector: "#available-characters"
+        },
+        {
+            text: "Drop the character here to add them to your team. Different characters have different stats. ",
+            targetSelector: "#slot-0"
+        }
+        // {
+        //     text: "Click this button when your team is ready!",
+        //     targetSelector: "#start-battle-btn"
+        // }
+    ];
+    function showTutorialStep(index) {
+        const step = tutorialSteps[index];
+        const overlay = document.getElementById('tutorial-overlay');
+        const highlight = document.getElementById('tutorial-highlight');
+        const tooltip = document.getElementById('tutorial-tooltip');
+        const text = document.getElementById('tutorial-text');
+    
+        const target = document.querySelector(step.targetSelector);
+        const rect = target.getBoundingClientRect();
+    
+        highlight.style.top = `${rect.top - 5}px`;
+        highlight.style.left = `${rect.left - 5}px`;
+        highlight.style.width = `${rect.width + 10}px`;
+        highlight.style.height = `${rect.height + 10}px`;
+    
+        text.textContent = step.text;
+        tooltip.style.top = `${rect.bottom + 10}px`;
+        tooltip.style.left = `${rect.left}px`;
+    
+        overlay.style.display = 'block';
+    }
+    let currentStep = 0;
+    
+    
+    document.getElementById('next-tutorial-step').addEventListener('click', () => {
+        currentStep++;
+        if (currentStep < tutorialSteps.length) {
+            showTutorialStep(currentStep);
+        } else {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+        }
+    });
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => showTutorialStep(0), 300); // 稍后显示第一步
+    });
     // --- Initialize ---
     loadCharacterData();
 

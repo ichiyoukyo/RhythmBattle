@@ -1,7 +1,8 @@
 // --- js/battle.js ---
 
-import { generateMasterBeatArray, generateEvaluationWindows, getMetadata, generateAudioArray } from './RhythmEngine.js';
-import { recordInput, getRecentInputs } from './detectPattern.js';
+import { generateMasterBeatArray, generateEvaluationWindows,generateBeatIntervals, getMetadata, generateAudioArray, generateSkipDetectArray } from './RhythmEngine.js';
+import { recordInput, getRecentInputs, updatePatterns, knownPatterns } from './detectPattern.js';
+import { getStageConfig, getRandomEnemy } from './stageConfig.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -11,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     const ctx = canvas.getContext('2d');
-    const CANVAS_WIDTH = canvas.width;
-    const CANVAS_HEIGHT = canvas.height;
+    const CANVAS_WIDTH = window.innerWidth;  // Full window width
+    const CANVAS_HEIGHT = window.innerHeight;  // 90% of window height
 
     // Add these image state variables
     let backgroundImage = null;
@@ -31,19 +32,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let feedbackTimer = 0;
     const feedbackDuration = 0.3; // How long to show feedback in seconds
 
+    // Add new state variable at the top with other state variables
+    let patternDisplay = null;
+
+    // Add to state variables section
+    let isPaused = false;
+
     // --- Game State ---
     let playerUnits = [];
     let enemyUnits = [];
     let playerBase = null;
     let enemyBase = null;
-    let playerEnergy = 100;
-    const maxEnergy = 500;
-    const energyRegenRate = 15;
+    let playerEnergy = 50;
+    const maxEnergy = 1200;
+    const energyRegenRate = 10;
     let enemySpawnTimer = 0;
     const enemySpawnInterval = 5000;
     let lastTime = 0;
     let gameOver = false;
     let gameWon = false;
+    let currentStage = null;
 
     // --- Loaded Data ---
     let selectedTeamIds = []; // Array of IDs ['P001', 'P002', ...]
@@ -58,21 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let evaluationWindows = [];
     let bgmBuffer = null;
     let bgmSource = null;
-    const BGM_OFFSET = 0.75; // Adjust this value to align BGM with beats
+
+    // Add to your state variables
+    let lastInputTime = -1; // Initialize to -1 to handle first beat
+    let beatIntervals = [];
 
     // Base Definition (createBase function modified)
     function createBase(team) {
-        const baseWidth = 150;  // Changed from 60 to 150
-        const baseHeight = 150; // Changed from 100 to 150
+        const baseWidth = 250;   // Increased from 150
+        const baseHeight = 250;  // Increased from 150
         return {
             id: team + 'Base',
             team: team,
-            maxHp: 1000,
-            hp: 1000,
+            maxHp: team === 'enemy' ? currentStage.enemyBase.maxHp : 1000,
+            hp: team === 'enemy' ? currentStage.enemyBase.maxHp : 1000,
             // Adjust x position for enemy base to account for larger width
             x: (team === 'player') ? 0 : CANVAS_WIDTH - baseWidth,
             // Adjust y position to keep base on ground with new height
-            y: CANVAS_HEIGHT - baseHeight - 10,
+            y: CANVAS_HEIGHT - baseHeight - 20, // Adjusted position
             width: baseWidth,
             height: baseHeight,
             color: (team === 'player') ? 'darkblue' : 'darkred',
@@ -185,8 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 3. Define/Load Enemy Data (Hardcoded for MVP)
             enemyDataConfig = {
-                'E001': { name: "Basic Doge", hp: 200, atk: 40, speed: 30, frequency: 90, attackRange: 40 }
-                // Add more enemy types here if needed
+                'E001': { name: "Rat Scream", hp: 250, atk: 60, speed: 90, frequency: 100, attackRange: 40 },
+                'E002': { name: "Noise Bat", hp: 400, atk: 40, speed: 60, frequency: 110, attackRange: 140 },
+                'E003': { name: "Succubus Flutist", hp: 1200, atk: 90, speed: 75, frequency: 90, attackRange: 100 },
+                'E004': { name: "Darkroar", hp: 5000, atk: 200, speed: 40, frequency: 100, attackRange: 180 },
+
             };
 
             console.log("Game data loaded successfully.");
@@ -206,9 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadImages() {
         try {
-            // Load background
+            // Load stage-specific background
             backgroundImage = new Image();
-            backgroundImage.src = 'assets/images/backgrounds/battle-bg.png';
+            backgroundImage.src = currentStage.background.path;
             await new Promise((resolve, reject) => {
                 backgroundImage.onload = resolve;
                 backgroundImage.onerror = reject;
@@ -222,8 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 allyCastleImage.onerror = reject;
             });
 
+            // Load stage-specific enemy base
             enemyCastleImage = new Image();
-            enemyCastleImage.src = 'assets/images/backgrounds/castle-enemy.png';
+            enemyCastleImage.src = currentStage.enemyBase.sprite;
             await new Promise((resolve, reject) => {
                 enemyCastleImage.onload = resolve;
                 enemyCastleImage.onerror = reject;
@@ -259,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Audio Functions ---
-    async function initAudioSystem() {
+    async function initAudioSystem(bgmConfig) {
         try {
             // Create audio context
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -269,8 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const beatArrayBuffer = await beatResponse.arrayBuffer();
             beatBuffer = await audioContext.decodeAudioData(beatArrayBuffer);
             
-            // Load BGM
-            const bgmResponse = await fetch('assets/music/bgm-2.mp3');
+            // Load stage-specific BGM
+            const bgmResponse = await fetch(bgmConfig.path);
             const bgmArrayBuffer = await bgmResponse.arrayBuffer();
             bgmBuffer = await audioContext.decodeAudioData(bgmArrayBuffer);
             
@@ -281,14 +296,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Schedule all beats and BGM
             startTime = audioContext.currentTime + 0.1; // Small delay before starting
             
-            // Schedule BGM
+            // Schedule BGM with stage-specific offset and volume
             bgmSource = audioContext.createBufferSource();
             bgmSource.buffer = bgmBuffer;
             const bgmGain = audioContext.createGain();
-            bgmGain.gain.value = 0.5; // Lower volume for BGM
+            bgmGain.gain.value = bgmConfig.volume; // Use stage-specific volume
             bgmSource.connect(bgmGain);
             bgmGain.connect(audioContext.destination);
-            bgmSource.start(startTime + BGM_OFFSET);
+            bgmSource.start(startTime + bgmConfig.offset); // Use stage-specific offset
             
             // Schedule beats
             audioArray.forEach(beatData => {
@@ -334,21 +349,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add this new function to check for skipped beats
+    function setupSkipInput() {
+        const skipDetectPoints = generateSkipDetectArray();
+        
+        setInterval(() => {
+            if (isPaused || gameOver || !audioContext || !startTime) return;
+
+            const currentTime = audioContext.currentTime - startTime;
+            
+            // Check each detection point
+            for (const point of skipDetectPoints) {
+                if (Math.abs(currentTime - point) < 0.005) { // Small tolerance window
+                    if (currentTime - lastInputTime > 0.5) { // Check if no input in last 0.5s
+                        recordInput('skip', true);
+                        feedbackText = 'SKIP!';
+                        feedbackTimer = feedbackDuration;
+                    }
+                    break; // Exit after finding first matching point
+                }
+            }
+        }, 10);
+    }
+
     // Modify setupRhythmInput function
     function setupRhythmInput() {
         document.addEventListener('keydown', (event) => {
             if (!audioContext || !startTime) return;
 
             const currentTime = audioContext.currentTime - startTime;
-            
-            // Find if we're in any evaluation window
+            lastInputTime = currentTime; // First time setting lastInputTime
+
             const hitWindow = evaluationWindows.find(window => 
                 currentTime >= window.window.start && 
                 currentTime <= window.window.end
             );
 
-            // Determine if the hit was successful
             const isSuccess = hitWindow !== undefined;
+            
+            if (isSuccess) {
+                lastInputTime = currentTime; // Second time setting lastInputTime - redundant!
+            }
             
             // Visual feedback
             feedbackText = isSuccess ? 'SUCCESS!' : 'MISS!';
@@ -368,6 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     case 'slot3':
                         spawnPlayerUnit(2);
+                        break;
+                    case 'slot4':
+                        spawnPlayerUnit(3);
                         break;
                 }
             }
@@ -430,7 +474,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const newUnit = new Unit(
                 characterId, 
-                unitConfig, 
+                {
+                    ...unitConfig,
+                    width: 100,  // Add these properties to override default size
+                    height: 100
+                },
                 spawnX, // Spawn at middle of base
                 0, 
                 'player', 
@@ -444,11 +492,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // MODIFIED: Use enemyDataConfig
-    function spawnEnemyUnit(id) {
+    function spawnEnemyUnit() {
         if (gameOver) return;
-        const data = enemyDataConfig[id]; // Use loaded/defined config
+        const enemyId = getRandomEnemy(currentStage.enemies.types);
+        const data = enemyDataConfig[enemyId]; // Use loaded/defined config
         if (!data) {
-            console.error("Invalid enemy ID:", id);
+            console.error("Invalid enemy ID:", enemyId);
             return;
         }
         // For enemies, assume stats are flat (no levels in this example)
@@ -458,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const spawnX = enemyBase.x + (enemyBase.width / 2);
         
         const newUnit = new Unit(
-            id, 
+            enemyId, 
             unitConfig, 
             spawnX, // Spawn at middle of base
             0, 
@@ -471,10 +520,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add this function for drawing the beat indicator
     function drawBeatIndicator(ctx) {
-        const indicatorWidth = 40;
-        const indicatorHeight = 40;
+        const indicatorWidth = 60;   // Increased from 40
+        const indicatorHeight = 60;  // Increased from 40
         const x = CANVAS_WIDTH / 2 - indicatorWidth / 2;
-        const y = 20;
+        const y = 30;  // Adjusted position
 
         // Draw the base circle
         ctx.beginPath();
@@ -526,10 +575,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add near other UI drawing functions
     function drawInputHistory(ctx) {
         const recentInputs = getRecentInputs(10); // Get last 10 inputs
-        const cellSize = 30;
-        const padding = 5;
-        const startX = CANVAS_WIDTH - (cellSize + padding) * 10;
-        const startY = 10;
+        const cellSize = 50;  // Increased from 30
+        const padding = 5;    // Increased from 5
+        const startX = CANVAS_WIDTH - (cellSize + padding) * 10 - 20;
+        const startY = 20;
         
         // Draw background
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
@@ -558,6 +607,209 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Add this function to create and update pattern display
+    function setupPatternDisplay() {
+        if (!patternDisplay) {
+            patternDisplay = document.createElement('div');
+            patternDisplay.id = 'pattern-display';
+            patternDisplay.style.cssText = `
+                position: absolute;
+                top: ${CANVAS_HEIGHT + 10}px;
+                left: 0;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                padding: 20px;
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            `;
+            document.body.appendChild(patternDisplay);
+        }
+
+        updatePatternDisplay();
+    }
+
+    function updatePatternDisplay() {
+        if (!patternDisplay) return;
+
+        // Use the imported knownPatterns and access selectedTeamIds and characterSprites
+        patternDisplay.innerHTML = Object.entries(knownPatterns)
+            .map(([slot, pattern], index) => {
+                const characterId = selectedTeamIds[index];
+                const characterSprite = characterSprites[characterId];
+                
+                return `
+                    <div class="pattern-box" style="
+                        background: rgba(0,0,0,0.05);
+                        padding: 20px;
+                        border-radius: 10px;
+                        text-align: center;
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                        min-width: 250px;
+                    ">
+                        <div style="
+                            width: 80px;  // Increased from 50px
+                            height: 80px; // Increased from 50px
+                            overflow: hidden;
+                            border-radius: 8px;
+                            border: 2px solid #ccc;
+                        ">
+                            ${characterSprite ? `
+                                <img 
+                                    src="${characterSprite.src}" 
+                                    style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                    "
+                                    alt="Character ${index + 1}"
+                                />
+                            ` : '<div style="width: 100%; height: 100%; background: #ddd;"></div>'}
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; margin-bottom: 8px; font-size: 1.2em;">
+                                Slot ${index + 1}
+                            </div>
+                            <div style="
+                                font-family: monospace;
+                                font-size: 1.4em;
+                                color: #333;
+                            ">
+                                ${pattern.join(' → ')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+    }
+
+    // Add pause menu setup function
+    function setupPauseMenu() {
+        // Add pause button
+        const pauseButton = document.createElement('button');
+        pauseButton.id = 'pause-button';
+        pauseButton.textContent = '⏸️'; // Pause emoji
+        pauseButton.style.cssText = `
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            font-size: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background 0.2s;
+        `;
+        document.body.appendChild(pauseButton);
+        pauseButton.onclick = togglePause;
+
+        // Create pause menu container
+        const pauseMenu = document.createElement('div');
+        pauseMenu.id = 'pause-menu';
+        pauseMenu.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        `;
+
+        // Keep existing pause menu content
+        pauseMenu.innerHTML = `
+            <div style="
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                min-width: 300px;
+            ">
+                <h2 style="margin-bottom: 20px;">Game Paused</h2>
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                ">
+                    <button id="resume-button" class="pause-menu-button">Resume Game</button>
+                    <button id="restart-battle-button" class="pause-menu-button">Restart Battle</button>
+                    <button id="change-team-button" class="pause-menu-button">Change Team</button>
+                    <button id="quit-game-button" class="pause-menu-button">Quit Game</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(pauseMenu);
+
+        // Add button styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .pause-menu-button {
+                padding: 10px 20px;
+                margin: 5px 0;
+                width: 100%;
+                border: none;
+                border-radius: 5px;
+                background: #4a4a4a;
+                color: white;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .pause-menu-button:hover {
+                background: #666;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add event listeners
+        document.getElementById('resume-button').onclick = resumeGame;
+        document.getElementById('restart-battle-button').onclick = init;
+        document.getElementById('change-team-button').onclick = () => window.location.href = 'team.html';
+        document.getElementById('quit-game-button').onclick = () => window.location.href = 'index.html';
+
+        // Add keyboard listener for pause
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                togglePause();
+            }
+        });
+    }
+
+    // Add pause control functions
+    function togglePause() {
+        isPaused = !isPaused;
+        const pauseMenu = document.getElementById('pause-menu');
+        pauseMenu.style.display = isPaused ? 'flex' : 'none';
+
+        if (isPaused) {
+            // Pause audio
+            if (bgmSource) bgmSource.playbackRate.value = 0;
+            beatSources.forEach(source => {
+                if (source.playbackRate) source.playbackRate.value = 0;
+            });
+        } else {
+            // Resume audio
+            if (bgmSource) bgmSource.playbackRate.value = 1;
+            beatSources.forEach(source => {
+                if (source.playbackRate) source.playbackRate.value = 1;
+            });
+        }
+    }
+
+    function resumeGame() {
+        if (isPaused) {
+            togglePause();
+        }
+    }
+
     // Modify your update function to include feedback timer
     function update(deltaTime) {
         if (gameOver) return;
@@ -574,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Spawn enemies
         enemySpawnTimer += deltaTime * 1000; // Timer in ms
         if (enemySpawnTimer >= enemySpawnInterval) {
-            spawnEnemyUnit('E001'); // Spawn the basic enemy
+            spawnEnemyUnit(); // Spawn the basic enemy
             enemySpawnTimer = 0; // Reset timer
         }
 
@@ -630,9 +882,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.textAlign = 'left';
         ctx.fillText(`Energy: ${Math.floor(playerEnergy)} / ${maxEnergy}`, 10, 20);
 
-        // Draw Summon Buttons (replace temporary buttons)
-        drawSummonUI();
-
         // Add this before game over screen
         drawRhythmFeedback(ctx);
 
@@ -652,167 +901,153 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // NEW: Function to draw summon UI based on selected team
-    function drawSummonUI() {
-        const buttonHeight = 40;
-        const buttonWidth = 80;
-        const startX = 10;
-        const startY = CANVAS_HEIGHT - buttonHeight - 10; // Bottom left corner
-        const padding = 10;
+    // Add this function before init()
+    function gameLoop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        const deltaTime = (timestamp - lastTime) / 1000; // Convert to seconds
+        lastTime = timestamp;
 
-        for (let i = 0; i < selectedTeamIds.length; i++) {
-            const charId = selectedTeamIds[i];
-            if (!charId) continue; // Skip empty slots
-
-            const charBaseData = fullCharacterData[charId];
-            if (!charBaseData) continue; // Skip if data missing
-
-            const x = startX + i * (buttonWidth + padding);
-            const y = startY;
-
-            // Button background (indicate affordability)
-            ctx.fillStyle = (playerEnergy >= charBaseData.cost) ? '#4CAF50' : '#aaaaaa'; // Green if affordable, grey if not
-            ctx.fillRect(x, y, buttonWidth, buttonHeight);
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(x, y, buttonWidth, buttonHeight);
-
-            // Character Name/Cost (simplified)
-            ctx.fillStyle = 'white';
-            ctx.font = '10px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${charBaseData.name}`, x + buttonWidth / 2, y + 12);
-            ctx.fillText(`Cost: ${charBaseData.cost}`, x + buttonWidth / 2, y + 28);
-
-            // You would add click listeners here to call spawnPlayerUnit(i)
-            // This requires mapping canvas clicks to buttons, which is more complex.
-            // For MVP, keep using external HTML buttons or keyboard input.
-            // Let's add temporary HTML buttons dynamically instead.
-        }
-    }
-
-    // Modify the setupSummonControls function to show level information:
-    function setupSummonControls() {
-        const controlsDiv = document.getElementById('summon-controls-container');
-        if (!controlsDiv) return;
-
-        controlsDiv.innerHTML = '';
-
-        for (let i = 0; i < selectedTeamIds.length; i++) {
-            const charId = selectedTeamIds[i];
-            if (!charId) continue;
-            
-            const charBaseData = fullCharacterData[charId];
-            if (!charBaseData) continue;
-
-            const level = i + 1;
-            const stats = charBaseData.levelStats[i];
-            
-            const button = document.createElement('button');
-            button.textContent = `Lv.${level} ${charBaseData.name} (${i+1})`;
-            button.title = `Level ${level}\nHP: ${stats.hp} ATK: ${stats.atk}\nCost: ${charBaseData.cost}`;
-            button.onclick = () => spawnPlayerUnit(i);
-            button.classList.add('summon-button');
-            controlsDiv.appendChild(button);
-        }
-    }
-
-    function gameLoop(currentTime) {
-        // First frame
-        if (lastTime === 0) {
-            lastTime = currentTime;
+        // Skip frame if game isn't ready
+        if (!audioContext || !startTime) {
             requestAnimationFrame(gameLoop);
             return;
         }
 
-        // Calculate delta time in seconds
-        const deltaTime = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
+        // Skip updates if paused, but keep the loop running
+        if (!isPaused) {
+            if (!audioContext || !startTime) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
 
-        // Update game state
-        update(deltaTime);
+            update(deltaTime);
+            draw();
+        }
 
-        // Draw everything
-        draw();
-
-        // Request next frame
-        requestAnimationFrame(gameLoop);
+        if (!gameOver) {
+            requestAnimationFrame(gameLoop);
+        }
     }
 
-    // Add setupRhythmInput to your init function
-    async function init() {
-        console.log("Initializing battle...");
-        
-        // Initialize audio system first
-        const audioInitialized = await initAudioSystem();
-        if (!audioInitialized) {
-            console.error("Failed to initialize audio system");
-            return;
+    // Modify init function to setup pause menu
+    async function init(stageId = 'stage1') {
+        try {
+            // Load stage configuration
+            currentStage = getStageConfig(stageId);
+            
+            // Initialize audio system with stage-specific BGM
+            const audioInitialized = await initAudioSystem(currentStage.bgm);
+            if (!audioInitialized) return false;
+
+            // Load game data
+            const dataLoaded = await loadGameData();
+            if (!dataLoaded) {
+                console.error("Failed to load game data");
+                return;
+            }
+            
+            // Load images
+            const imagesLoaded = await loadImages();
+            if (!imagesLoaded) {
+                console.error("Failed to load images");
+                return;
+            }
+
+            playerBase = createBase('player');
+            enemyBase = createBase('enemy');
+
+            // Reset state variables
+            playerUnits = [];
+            enemyUnits = [];
+            playerEnergy = 100;
+            enemySpawnTimer = 0;
+            lastTime = 0;
+            gameOver = false;
+            gameWon = false;
+
+            // Initially disable any existing summon buttons (e.g., during restart)
+            document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = true);
+
+            // --- Keep Restart button logic ---
+            const restartButtonId = 'restart-button';
+            let restartButton = document.getElementById(restartButtonId); 
+            if (!restartButton) { // Add restart button only if it doesn't exist
+                restartButton = document.createElement('button');
+                restartButton.id = restartButtonId; // Assign ID
+                restartButton.textContent = 'Restart Battle';
+                restartButton.style.position = 'absolute';
+                restartButton.style.top = '10px'; // Position top-left
+                restartButton.style.left = '10px'; 
+                restartButton.style.padding = '5px 10px';
+                document.body.appendChild(restartButton);
+            }
+            // Ensure onclick is always set to the latest init function reference
+            restartButton.onclick = init;
+
+            // Setup rhythm input after audio initialization
+            setupRhythmInput();
+            setupSkipInput(); // Add this line
+
+            // Set up pattern display
+            setupPatternDisplay();
+
+// Remove old pause button if it exists
+            const oldPauseButton = document.getElementById('pause-button');
+            if (oldPauseButton) {
+                oldPauseButton.remove();
+            }
+
+            // Setup pause menu (will create new pause button)
+            if (!document.getElementById('pause-menu')) {
+                setupPauseMenu();
+            }
+
+            // Reset pause state
+            isPaused = false;
+            document.getElementById('pause-menu').style.display = 'none';
+
+            // --- Start the game loop ---
+            lastTime = 0; // Reset lastTime for deltaTime calculation
+            requestAnimationFrame(gameLoop);
+        } catch (error) {
+            console.error("Failed to initialize stage:", error);
+            return false;
         }
-
-        // Load game data
-        const dataLoaded = await loadGameData();
-        if (!dataLoaded) {
-            console.error("Failed to load game data");
-            return;
-        }
-        
-        // Load images
-        const imagesLoaded = await loadImages();
-        if (!imagesLoaded) {
-            console.error("Failed to load images");
-            return;
-        }
-
-        // Initially disable any existing summon buttons (e.g., during restart)
-        document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = true);
-
-        playerBase = createBase('player');
-        enemyBase = createBase('enemy');
-
-        // Reset state variables
-        playerUnits = [];
-        enemyUnits = [];
-        playerEnergy = 100;
-        enemySpawnTimer = 0;
-        lastTime = 0;
-        gameOver = false;
-        gameWon = false;
-
-        // Remove old controls if they exist (optional, good practice)
-        const oldControls = document.getElementById('summon-controls-container');
-        if (oldControls) {
-            // Clear or rebuild controls instead of removing/re-adding container
-            oldControls.innerHTML = '';
-        }
-
-        // ADD new dynamic summon buttons based on loaded team
-        setupSummonControls();
-
-        // --- Keep Restart button logic ---
-        const restartButtonId = 'restart-button';
-        let restartButton = document.getElementById(restartButtonId);
-        if (!restartButton) { // Add restart button only if it doesn't exist
-            restartButton = document.createElement('button');
-            restartButton.id = restartButtonId; // Assign ID
-            restartButton.textContent = 'Restart Battle';
-            restartButton.style.position = 'absolute';
-            restartButton.style.top = '10px'; // Position top-left
-            restartButton.style.left = '10px';
-            restartButton.style.padding = '5px 10px';
-            document.body.appendChild(restartButton);
-        }
-        // Ensure onclick is always set to the latest init function reference
-        restartButton.onclick = init;
-
-        // Setup rhythm input after audio initialization
-        setupRhythmInput();
-
-        // --- Start the game loop ---
-        lastTime = 0; // Reset lastTime for deltaTime calculation
-        requestAnimationFrame(gameLoop);
     }
+
+    // Add pattern update function that can be called when patterns change
+    function updatePatterns(newPatterns) {
+        // Update patterns in detectPattern.js
+        Object.assign(knownPatterns, newPatterns);
+        
+        // Update the display
+        updatePatternDisplay();
+    }
+    
 
     // --- Start the game ---
     init(); // Call the async init function
+
+    // Example usage in battle.js:
+    function changePatterns() {
+        const newPatterns = {
+            'slot1': ['z', 'x', 'z', 'x'],
+            'slot2': ['c', 'v', 'c', 'v'],
+            'slot3': ['b', 'n', 'b', 'n'],
+            'slot4': ['m', ',', 'm', ',']
+        };
+        
+        updatePatterns(newPatterns);
+    }
+
+    // Add window resize handler
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        // Redraw if needed
+        if (!isPaused && !gameOver) {
+            draw();
+        }
+    });
 
 }); // End DOMContentLoaded

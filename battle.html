@@ -9,22 +9,25 @@
     <style>
         /* General Body Styles */
         body {
-            position: relative; /* Still useful if other elements need absolute positioning relative to body */
+            position: relative;
             font-family: sans-serif;
             text-align: center;
-            padding: 20px; /* Adjusted padding */
             margin: 0;
-            /* removed overflow: hidden; to allow scrolling if content exceeds viewport height */
+            padding: 0; /* Remove padding to allow full width */
+            width: 100vw;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Canvas Styling */
         #game-canvas {
             display: block;
-            margin: 0 auto 15px auto; /* Center horizontally, add bottom margin */
-            background-color: #eee; /* Light grey background for visibility */
-            border: 1px solid black;
-            max-width: 100%; /* Ensure canvas scales down on smaller screens */
-            box-sizing: border-box; /* Include border in width/height */
+            margin: 0 auto; /* Remove bottom margin */
+            background-color: #eee;
+            border: none; /* Remove border */
+            width: 100vw; /* Full viewport width */
+            height: 93vh; /* Increased from 90vh to match thinner pattern bar */
+            box-sizing: border-box;
         }
 
         /* Summon Controls Container (Populated by JS) */
@@ -198,12 +201,28 @@
             }
         }
 
+        /* Pattern Display Container Adjustment */
+        #pattern-display {
+            position: fixed !important; /* Override inline styles */
+            bottom: 0 !important;
+            top: auto !important; /* Override top positioning */
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5px 0; /* Reduced from 10px */
+            height: 5vh; /* Reduced from 10vh */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
         /* Improve canvas responsiveness */
-        @media (max-width: 840px) {
+        @media (max-width: 1240px) {
             #game-canvas {
-                margin: 0 auto;
-                width: 100%;
-                height: auto;
+                width: 100vw;
+                height: 85vh; /* Match the above change */
             }
         }
 
@@ -220,7 +239,7 @@
 </head>
 <body>
 
-<canvas id="game-canvas" width="800" height="400">
+<canvas id="game-canvas" width="1800" height="1000">
     Your browser does not support the HTML5 canvas tag.
 </canvas>
 
@@ -230,14 +249,6 @@
 
 <div class="rhythm-feedback">
     <div class="rhythm-input"></div>
-</div>
-
-<div id="summon-controls-container">
-</div>
-
-<div id="navigation-controls">
-    <a href="team.html" class="button retreat">Retreat / Change Team</a>
-    <a href="index.html" class="button quit">Quit Game</a>
 </div>
 
 <script src="js/character.js"></script>

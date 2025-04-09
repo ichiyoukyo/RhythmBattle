@@ -19,6 +19,18 @@ export function generateMasterBeatArray() {
     return masterBeats;
 }
 
+export function generateBeatIntervals() {
+    const masterBeats = generateMasterBeatArray();
+    const { beatInterval } = getMetadata();
+    const halfInterval = beatInterval / 2;
+    
+    // Generate intervals centered on each beat
+    return masterBeats.map(beat => ({
+        start: beat.time - halfInterval,
+        end: beat.time + halfInterval
+    }));
+}
+
 export function generateEvaluationWindows() {
     const { tolerance } = rhythmSettings;
     const masterBeats = generateMasterBeatArray();
@@ -59,4 +71,15 @@ export function generateAudioArray() {
     }));
 
     return audioTimings;
+}
+
+export function generateSkipDetectArray() {
+    const masterBeats = generateMasterBeatArray();
+    const { bpm } = rhythmSettings;
+    const beatInterval = 60 / bpm;
+    
+    // Return array of midpoints between beats
+    return masterBeats.slice(0, -1).map((beat, index) => {
+        return Number((beat.time + beatInterval/2).toFixed(3));
+    });
 }

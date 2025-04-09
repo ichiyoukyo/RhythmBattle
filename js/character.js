@@ -15,8 +15,8 @@ class Unit {
         this.timeSinceLastAttack = this.attackCooldown; // Start ready to attack
 
         // Appearance (simple rectangle for MVP)
-        this.width = 50;  // Changed from 30 to 50
-        this.height = 50; // Changed from 50 to 50 to make it square
+        this.width = 150;  // Increase this value (e.g., from 60 to 100)
+        this.height = 150; // Increase this value (e.g., from 60 to 100)
         this.color = (team === 'player') ? 'blue' : 'red';
 
         // Position
