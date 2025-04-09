@@ -15,7 +15,7 @@
   },
   "P002": {
     "name": "KameBoom",
-    "role": "Frontline Defender (Pure Tank)",
+    "role": "Role: Frontline Defender (Pure Tank)",
     "description": "KameBoom is a slow-moving but rock-solid turtle who specializes in taking damage for the team. While others play to the rhythm, he is the wall that keeps the beat going.",
     "image": "assets/images/characters/player/P002.png",
     "cost": 75,
@@ -28,6 +28,7 @@
   },
   "P003": {
     "name": "Lyrena",
+    "role": "Role: Healer (Melody Guardian)",
     "motto":"Her harp doesn’t just play music — it sings life back into the world.",
     "description": "Lyrena is a gentle forest fairy who channels the rhythm of life through her golden harp. With every string she plucks, she releases waves of soothing energy that restore her allies' strength and calm the battlefield.",
     "image": "assets/images/characters/player/P003.png",
@@ -41,7 +42,7 @@
   },
   "P004": {
     "name": "Arctondo",
-    "role":"Long-Range Attacker (Sound Sniper)",
+    "role":"Role: Long-Range Attacker (Sound Sniper)",
     "description": "Arctondo is a calm and composed violinist, a sound sniper who manipulates notes like blades to pierce enemies from afar. His obsession with perfect pitch is so strong that he occasionally forgets to pay attention to what's happening around him.",
     "image": "assets/images/characters/player/P004.png",
     "cost": 65,
@@ -54,7 +55,7 @@
   },
   "P005": {
     "name": "Migerr",
-    "role": "Melee Attacker",
+    "role": "Role: Melee Attacker",
     "description": "Miger is a fierce tiger MC from the wild side of the rhythm jungle. With a mic clenched in his paw like a weapon, he charges into enemies spitting ferocious rhymes and dropping lyrical punches.",
     "image": "assets/images/characters/player/P005.png",
     "cost": 65,
@@ -67,7 +68,7 @@
   },
   "P006": {
     "name": "Melody",
-    "role": "Long-Range Attacker",
+    "role": "Role: Long-Range Attacker",
     "description": "Melody Bun is a drum-infused rabbit who specializes in ranged rhythm attacks. Her powerful bass beats travel across the battlefield, knocking back enemies with precise timing. With every hop, she brings the beat—and the boom!",
     "image": "assets/images/characters/player/P006.png",
     "cost": 65,

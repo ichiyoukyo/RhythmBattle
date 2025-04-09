@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const popup = document.getElementById('character-info-popup');
         const image = document.getElementById('popup-char-image');
         const name = document.getElementById('popup-char-name');
-        // const role = document.getElementById('popup-char-role');
+        const role = document.getElementById('popup-char-role');
         const description = document.getElementById('popup-char-description');
         const levelStats = document.getElementById('level-stats');
 
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set basic info
         image.src = char.image;
         name.textContent = char.name;
-        // name.textContent = char.name;
+        role.textContent = char.role;
         description.textContent = char.description;
 
         // Generate stats HTML
