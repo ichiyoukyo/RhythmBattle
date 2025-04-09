@@ -305,6 +305,48 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.style.display = 'none';
         }
     });
+
+    const tutorialSteps = [
+        {
+            text: "Welcome! Let's learn how to build your team.",
+            targetSelector: "#available-characters"
+        },
+        {
+            text: "Drag a character from here into a slot.",
+            targetSelector: "#available-characters"
+        },
+        {
+            text: "Drop the character here to add them to your team. Different characters have different stats.",
+            targetSelector: "#slot-0"
+        },
+        {
+            text: "Click this button when your team is ready!",
+            targetSelector: "#start-battle-btn"
+        }
+    ];
+    function showTutorialStep(index) {
+        const step = tutorialSteps[index];
+        const overlay = document.getElementById('tutorial-overlay');
+        const highlight = document.getElementById('tutorial-highlight');
+        const tooltip = document.getElementById('tutorial-tooltip');
+        const text = document.getElementById('tutorial-text');
+    
+        const target = document.querySelector(step.targetSelector);
+        const rect = target.getBoundingClientRect();
+    
+        highlight.style.top = `${rect.top - 5}px`;
+        highlight.style.left = `${rect.left - 5}px`;
+        highlight.style.width = `${rect.width + 10}px`;
+        highlight.style.height = `${rect.height + 10}px`;
+    
+        text.textContent = step.text;
+        tooltip.style.top = `${rect.bottom + 10}px`;
+        tooltip.style.left = `${rect.left}px`;
+    
+        overlay.style.display = 'block';
+    }
+    let currentStep = 0;
+    
     
     document.getElementById('next-tutorial-step').addEventListener('click', () => {
         currentStep++;
