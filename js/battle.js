@@ -1,5 +1,8 @@
 // --- js/battle.js ---
 
+import { generateMasterBeatArray, generateEvaluationWindows, getMetadata, generateAudioArray } from './RhythmEngine.js';
+import { recordInput, getRecentInputs } from './detectPattern.js';
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const canvas = document.getElementById('game-canvas');
@@ -17,6 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let enemyCastleImage = null;
     let castleDefeatFx = null;
     window.characterSprites = {};
+
+    // Add these variables at the top with other state variables
+    let beatIndicatorActive = false;
+    let beatIndicatorTimer = 0;
+    const beatIndicatorDuration = 0.1; // Duration of the blink in seconds
+
+    // Add these variables to your state section after other state variables
+    let feedbackText = '';
+    let feedbackTimer = 0;
+    const feedbackDuration = 0.3; // How long to show feedback in seconds
 
     // --- Game State ---
     let playerUnits = [];
@@ -36,6 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedTeamIds = []; // Array of IDs ['P001', 'P002', ...]
     let fullCharacterData = {}; // All data loaded from characters.json
     let enemyDataConfig = {}; // Enemy data loaded (or defined)
+
+    // --- Audio State ---
+    let audioContext = null;
+    let beatBuffer = null;
+    let startTime = 0;
+    let beatSources = [];
+    let evaluationWindows = [];
+    let bgmBuffer = null;
+    let bgmSource = null;
+    const BGM_OFFSET = 0.75; // Adjust this value to align BGM with beats
 
     // Base Definition (createBase function modified)
     function createBase(team) {
@@ -235,19 +258,151 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Audio Functions ---
+    async function initAudioSystem() {
+        try {
+            // Create audio context
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Load beat sound
+            const beatResponse = await fetch('assets/music/beat.wav');
+            const beatArrayBuffer = await beatResponse.arrayBuffer();
+            beatBuffer = await audioContext.decodeAudioData(beatArrayBuffer);
+            
+            // Load BGM
+            const bgmResponse = await fetch('assets/music/bgm-2.mp3');
+            const bgmArrayBuffer = await bgmResponse.arrayBuffer();
+            bgmBuffer = await audioContext.decodeAudioData(bgmArrayBuffer);
+            
+            // Generate timing arrays
+            const audioArray = generateAudioArray();
+            evaluationWindows = generateEvaluationWindows();
+            
+            // Schedule all beats and BGM
+            startTime = audioContext.currentTime + 0.1; // Small delay before starting
+            
+            // Schedule BGM
+            bgmSource = audioContext.createBufferSource();
+            bgmSource.buffer = bgmBuffer;
+            const bgmGain = audioContext.createGain();
+            bgmGain.gain.value = 0.5; // Lower volume for BGM
+            bgmSource.connect(bgmGain);
+            bgmGain.connect(audioContext.destination);
+            bgmSource.start(startTime + BGM_OFFSET);
+            
+            // Schedule beats
+            audioArray.forEach(beatData => {
+                const source = audioContext.createBufferSource();
+                source.buffer = beatBuffer;
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 0.2;
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                source.start(startTime + beatData.time);
+                beatSources.push(source);
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Failed to initialize audio system:', error);
+            return false;
+        }
+    }
+
+    function cleanupAudio() {
+        if (bgmSource) {
+            try {
+                bgmSource.stop();
+            } catch (e) {
+                // Ignore if already stopped
+            }
+            bgmSource = null;
+        }
+        
+        beatSources.forEach(source => {
+            try {
+                source.stop();
+            } catch (e) {
+                // Ignore if already stopped
+            }
+        });
+        beatSources = [];
+        
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+    }
+
+    // Modify setupRhythmInput function
+    function setupRhythmInput() {
+        document.addEventListener('keydown', (event) => {
+            if (!audioContext || !startTime) return;
+
+            const currentTime = audioContext.currentTime - startTime;
+            
+            // Find if we're in any evaluation window
+            const hitWindow = evaluationWindows.find(window => 
+                currentTime >= window.window.start && 
+                currentTime <= window.window.end
+            );
+
+            // Determine if the hit was successful
+            const isSuccess = hitWindow !== undefined;
+            
+            // Visual feedback
+            feedbackText = isSuccess ? 'SUCCESS!' : 'MISS!';
+            feedbackTimer = feedbackDuration;
+            
+            // Record input and check for patterns
+            const pattern = recordInput(event.key, isSuccess);
+            if (pattern) {
+                console.log(`Pattern detected: ${pattern.name}`);
+                // Trigger unit spawn based on pattern
+                switch(pattern.name) {
+                    case 'slot1':
+                        spawnPlayerUnit(0);
+                        break;
+                    case 'slot2':
+                        spawnPlayerUnit(1);
+                        break;
+                    case 'slot3':
+                        spawnPlayerUnit(2);
+                        break;
+                }
+            }
+            
+            console.log(`Input ${event.key} at ${currentTime.toFixed(3)}s: ${feedbackText}`);
+        });
+    }
+
     // --- Game Functions ---
 
     // Modify the spawnPlayerUnit function:
     function spawnPlayerUnit(slotIndex) {
-        if (gameOver || slotIndex < 0 || slotIndex >= selectedTeamIds.length) return;
+        console.log(`SpawnPlayerUnit called with slotIndex: ${slotIndex}`);
+        
+        if (gameOver) {
+            console.log('Game is over, cannot spawn unit');
+            return;
+        }
+        
+        if (slotIndex < 0 || slotIndex >= selectedTeamIds.length) {
+            console.error(`Invalid slotIndex: ${slotIndex}, valid range is 0-${selectedTeamIds.length - 1}`);
+            return;
+        }
 
         const characterId = selectedTeamIds[slotIndex];
+        console.log(`Character ID for slot ${slotIndex}: ${characterId}`);
+        
         if (!characterId) {
             console.warn(`No character assigned to slot ${slotIndex + 1}`);
             return;
         }
 
         const baseData = fullCharacterData[characterId];
+        console.log(`Base data for character:`, baseData);
+        
         if (!baseData) {
             console.error(`Data not found for character ID: ${characterId}`);
             return;
@@ -314,8 +469,101 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Spawned Enemy ${data.name}`);
     }
 
+    // Add this function for drawing the beat indicator
+    function drawBeatIndicator(ctx) {
+        const indicatorWidth = 40;
+        const indicatorHeight = 40;
+        const x = CANVAS_WIDTH / 2 - indicatorWidth / 2;
+        const y = 20;
+
+        // Draw the base circle
+        ctx.beginPath();
+        ctx.arc(x + indicatorWidth/2, y + indicatorHeight/2, indicatorWidth/2, 0, Math.PI * 2);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // If active, fill with highlight color
+        if (beatIndicatorActive) {
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.fill();
+        }
+    }
+
+    // Add this function to draw the feedback text
+    function drawRhythmFeedback(ctx) {
+        if (feedbackTimer > 0) {
+            ctx.save();
+            ctx.fillStyle = feedbackText === 'SUCCESS!' ? '#00ff00' : '#ff0000';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(feedbackText, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            ctx.restore();
+        }
+    }
+
+    // Add this function to update the beat indicator
+    function updateBeatIndicator(currentTime) {
+        const gameTime = currentTime - startTime;
+        
+        // Check if we're near any beat time
+        const nearestBeat = generateMasterBeatArray().find(beat => 
+            Math.abs(beat.time - gameTime) < beatIndicatorDuration
+        );
+
+        if (nearestBeat) {
+            beatIndicatorActive = true;
+            beatIndicatorTimer = beatIndicatorDuration;
+        } else if (beatIndicatorTimer > 0) {
+            beatIndicatorTimer -= 1/60; // Assuming 60fps
+            if (beatIndicatorTimer <= 0) {
+                beatIndicatorActive = false;
+            }
+        }
+    }
+
+    // Add near other UI drawing functions
+    function drawInputHistory(ctx) {
+        const recentInputs = getRecentInputs(10); // Get last 10 inputs
+        const cellSize = 30;
+        const padding = 5;
+        const startX = CANVAS_WIDTH - (cellSize + padding) * 10;
+        const startY = 10;
+        
+        // Draw background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(
+            startX - padding, 
+            startY - padding, 
+            (cellSize + padding) * 10 + padding, 
+            cellSize + padding * 2
+        );
+
+        // Draw each input
+        recentInputs.forEach((key, index) => {
+            const x = startX + index * (cellSize + padding);
+            const y = startY;
+            
+            // Draw cell background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(x, y, cellSize, cellSize);
+            
+            // Draw key text
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(key, x + cellSize/2, y + cellSize/2);
+        });
+    }
+
+    // Modify your update function to include feedback timer
     function update(deltaTime) {
         if (gameOver) return;
+
+        // Add this line to update the beat indicator
+        updateBeatIndicator(audioContext.currentTime);
 
         // Regenerate energy
         playerEnergy += energyRegenRate * deltaTime;
@@ -338,6 +586,9 @@ document.addEventListener('DOMContentLoaded', () => {
         playerUnits.forEach(unit => unit.update(deltaTime, currentEnemyUnits, enemyBase));
         enemyUnits.forEach(unit => unit.update(deltaTime, currentPlayerUnits, playerBase));
 
+        if (feedbackTimer > 0) {
+            feedbackTimer = Math.max(0, feedbackTimer - deltaTime);
+        }
 
         // Remove dead units
         playerUnits = playerUnits.filter(unit => unit.isAlive);
@@ -346,6 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check Win/Loss conditions (already handled in base.takeDamage)
     }
 
+    // Modify the draw function to include input history
     function draw() {
         // Clear canvas
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -358,6 +610,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         }
+
+        // Add this line after drawing the background but before units
+        drawBeatIndicator(ctx);
+
+        // Add input history display
+        drawInputHistory(ctx);
 
         // Draw Bases
         playerBase.draw(ctx);
@@ -374,6 +632,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Draw Summon Buttons (replace temporary buttons)
         drawSummonUI();
+
+        // Add this before game over screen
+        drawRhythmFeedback(ctx);
 
         // Draw Game Over / Win Message (keep existing logic)
         // Draw Game Over / Win Message
@@ -443,40 +704,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const charBaseData = fullCharacterData[charId];
             if (!charBaseData) continue;
 
-            const level = i + 1; // Convert to 1-based level number
+            const level = i + 1;
             const stats = charBaseData.levelStats[i];
             
             const button = document.createElement('button');
             button.textContent = `Lv.${level} ${charBaseData.name} (${i+1})`;
             button.title = `Level ${level}\nHP: ${stats.hp} ATK: ${stats.atk}\nCost: ${charBaseData.cost}`;
             button.onclick = () => spawnPlayerUnit(i);
-            button.disabled = true;
             button.classList.add('summon-button');
             controlsDiv.appendChild(button);
         }
     }
 
-    function gameLoop(timestamp) {
-        if (!lastTime) {
-            lastTime = timestamp;
+    function gameLoop(currentTime) {
+        // First frame
+        if (lastTime === 0) {
+            lastTime = currentTime;
+            requestAnimationFrame(gameLoop);
+            return;
         }
-        const deltaTime = (timestamp - lastTime) / 1000; // Time elapsed in seconds
-        lastTime = timestamp;
 
+        // Calculate delta time in seconds
+        const deltaTime = (currentTime - lastTime) / 1000;
+        lastTime = currentTime;
+
+        // Update game state
         update(deltaTime);
+
+        // Draw everything
         draw();
 
-        if (!gameOver) {
-            requestAnimationFrame(gameLoop);
-        } else {
-            console.log("Game Over. Won:", gameWon);
-            // Optional: Add restart button logic here
-        }
+        // Request next frame
+        requestAnimationFrame(gameLoop);
     }
 
+    // Add setupRhythmInput to your init function
     async function init() {
         console.log("Initializing battle...");
         
+        // Initialize audio system first
+        const audioInitialized = await initAudioSystem();
+        if (!audioInitialized) {
+            console.error("Failed to initialize audio system");
+            return;
+        }
+
         // Load game data
         const dataLoaded = await loadGameData();
         if (!dataLoaded) {
@@ -532,13 +804,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure onclick is always set to the latest init function reference
         restartButton.onclick = init;
 
+        // Setup rhythm input after audio initialization
+        setupRhythmInput();
 
-        // Start the game loop *before* enabling buttons? Or after? Let's enable first.
-        console.log("Initialization complete. Enabling controls.");
-        // <<< Enable summon buttons NOW that init is done and bases exist
-        document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = false);
-
-        // Start the game loop (make sure lastTime is reset before starting)
+        // --- Start the game loop ---
         lastTime = 0; // Reset lastTime for deltaTime calculation
         requestAnimationFrame(gameLoop);
     }
