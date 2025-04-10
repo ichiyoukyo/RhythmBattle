@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 localStorage.setItem('rhythmBattleTeam', JSON.stringify(selectedTeam));
                 console.log('Team saved to localStorage:', selectedTeam);
-                window.location.href = 'battle.html'; // Navigate to battle page
+                window.location.href = 'selectStage.html'; // Navigate to battle page
             } catch (error) {
                 console.error("Could not save team to localStorage:", error);
                 alert("Error saving team configuration.");

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage Selection</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            font-family: Arial, sans-serif;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            z-index: 1;
+            opacity: 0.5; /* Adjust this value to make image more/less visible */
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 2; /* Place content above background image */
+        }
+
+        .floating-text {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .path-button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: 2px solid #fff;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .path-button:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .path-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <img src="assets/images/backgrounds/selectStage.png" alt="Stage Selection Background" class="background-image">
+    <div class="container">
+        <h1 class="floating-text">Choose your next step</h1>
+        <div class="button-container">
+            <button class="path-button" onclick="choosePath('left')" id="leftPath">Path A</button>
+            <button class="path-button" onclick="choosePath('right')" id="rightPath">Path B</button>
+        </div>
+    </div>
+    <script src="js/selectStage.js"></script>
+</body>
+</html>

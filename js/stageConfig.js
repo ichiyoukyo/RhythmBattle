@@ -35,14 +35,64 @@ export const stages = {
             volume: 0.7
         },
         enemyBase: {
-            maxHp: 1500,
-            sprite: 'assets/images/backgrounds/castle-enemy.png'
+            maxHp: 2500,
+            sprite: 'assets/images/backgrounds/castle-ememy-2.png'
         },
         enemies: {
             spawnInterval: 4000,
             types: [
                 { id: 'E001', weight: 70 },
                 { id: 'E002', weight: 30 }
+            ]
+        }
+    },
+    'stage3': {
+        name: "Desert Battle",
+        background: {
+            path: 'assets/images/backgrounds/background2.png',
+            // scrollSpeed: 0.5 // scrolling background
+        },
+        bgm: {
+            path: 'assets/music/bgm-3.mp3',
+            bpm: 140,
+            offset: 0.0,
+            volume: 0.7
+        },
+        enemyBase: {
+            maxHp: 1500,
+            sprite: 'assets/images/backgrounds/castle-ememy-2.png'
+        },
+        enemies: {
+            spawnInterval: 4000,
+            types: [
+                { id: 'E001', weight: 30 },
+                { id: 'E002', weight: 50 },
+                { id: 'E003', weight: 20 }
+            ]
+        }
+    },'stage4': {
+        name: "Desert Battle",
+        background: {
+            path: 'assets/images/backgrounds/background3.png',
+            // scrollSpeed: 0.5 // scrolling background
+        },
+        bgm: {
+            path: 'assets/music/bgm-3.mp3',
+            bpm: 140,
+            offset: 0.0,
+            volume: 0.7
+        },
+        enemyBase: {
+            maxHp: 8000,
+            sprite: 'assets/images/backgrounds/castle-ememy-2.png'
+        },
+        enemies: {
+            spawnInterval: 3500,
+            types: [
+                { id: 'E001', weight: 10 },
+                { id: 'E002', weight: 30 },
+                { id: 'E003', weight: 30 },
+                { id: 'E004', weight: 10 }
             ]
         }
     }

@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let victoryImage = null;
     let defeatImage = null;
 
+    // Add these variables at the top with other state variables
+    let rhythmInputListener = null;
+    let skipInputInterval = null;
+    let escKeyListener = null;
+
+    // Add to state variables section at the top
+    let gameOverButtons = null;
+
     // --- Game State ---
     let playerUnits = [];
     let enemyUnits = [];
@@ -370,36 +378,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Add this new function to check for skipped beats
+    // Modify the cleanupAudio function to include more cleanup
+    function cleanup() {
+        // Clean up audio
+        cleanupAudio();
+        
+        // Clean up event listeners
+        if (rhythmInputListener) {
+            document.removeEventListener('keydown', rhythmInputListener);
+            rhythmInputListener = null;
+        }
+        
+        // Clear skip input interval
+        if (skipInputInterval) {
+            clearInterval(skipInputInterval);
+            skipInputInterval = null;
+        }
+        
+        // Remove escape key listener
+        if (escKeyListener) {
+            document.removeEventListener('keydown', escKeyListener);
+            escKeyListener = null;
+        }
+        
+        // Remove pause menu and button
+        const pauseMenu = document.getElementById('pause-menu');
+        if (pauseMenu) pauseMenu.remove();
+        
+        const pauseButton = document.getElementById('pause-button');
+        if (pauseButton) pauseButton.remove();
+
+        // Remove game over buttons if they exist
+        if (gameOverButtons) {
+            gameOverButtons.remove();
+            gameOverButtons = null;
+        }
+    }
+
+    // Modify setupSkipInput to store the interval
     function setupSkipInput() {
+        // Clear existing interval if any
+        if (skipInputInterval) {
+            clearInterval(skipInputInterval);
+        }
+        
         const skipDetectPoints = generateSkipDetectArray();
         
-        setInterval(() => {
+        skipInputInterval = setInterval(() => {
             if (isPaused || gameOver || !audioContext || !startTime) return;
 
             const currentTime = audioContext.currentTime - startTime;
             
-            // Check each detection point
             for (const point of skipDetectPoints) {
-                if (Math.abs(currentTime - point) < 0.005) { // Small tolerance window
-                    if (currentTime - lastInputTime > 0.5) { // Check if no input in last 0.5s
+                if (Math.abs(currentTime - point) < 0.005) {
+                    if (currentTime - lastInputTime > 0.5) {
                         recordInput('skip', true);
                         feedbackText = 'SKIP!';
                         feedbackTimer = feedbackDuration;
                     }
-                    break; // Exit after finding first matching point
+                    break;
                 }
             }
         }, 10);
     }
 
-    // Modify setupRhythmInput function
+    // Modify setupRhythmInput to store the listener
     function setupRhythmInput() {
-        document.addEventListener('keydown', (event) => {
+        // Remove existing listener if any
+        if (rhythmInputListener) {
+            document.removeEventListener('keydown', rhythmInputListener);
+        }
+        
+        rhythmInputListener = (event) => {
             if (!audioContext || !startTime) return;
-
+            
             const currentTime = audioContext.currentTime - startTime;
-            lastInputTime = currentTime; // First time setting lastInputTime
+            lastInputTime = currentTime;
 
             const hitWindow = evaluationWindows.find(window => 
                 currentTime >= window.window.start && 
@@ -407,10 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             const isSuccess = hitWindow !== undefined;
-            
-            if (isSuccess) {
-                lastInputTime = currentTime; // Second time setting lastInputTime - redundant!
-            }
             
             // Visual feedback
             feedbackText = isSuccess ? 'SUCCESS!' : 'MISS!';
@@ -420,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const pattern = recordInput(event.key, isSuccess);
             if (pattern) {
                 console.log(`Pattern detected: ${pattern.name}`);
-                // Trigger unit spawn based on pattern
                 switch(pattern.name) {
                     case 'slot1':
                         spawnPlayerUnit(0);
@@ -438,7 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             console.log(`Input ${event.key} at ${currentTime.toFixed(3)}s: ${feedbackText}`);
-        });
+        };
+        
+        document.addEventListener('keydown', rhythmInputListener);
     }
 
     // --- Game Functions ---
@@ -707,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
     }
 
-    // Add pause menu setup function
+    // Modify setupPauseMenu to store the escape key listener
     function setupPauseMenu() {
         // Add pause button
         const pauseButton = document.createElement('button');
@@ -792,16 +843,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add event listeners
         document.getElementById('resume-button').onclick = resumeGame;
-        document.getElementById('restart-battle-button').onclick = init;
+        document.getElementById('restart-battle-button').onclick = async () => {
+            // Hide pause menu
+            document.getElementById('pause-menu').style.display = 'none';
+            isPaused = false;
+            
+            // Restart the game
+            await init(currentStage?.id || 'stage1');
+        };
         document.getElementById('change-team-button').onclick = () => window.location.href = 'team.html';
-        document.getElementById('quit-game-button').onclick = () => window.location.href = 'index.html';
+        document.getElementById('quit-game-button').onclick = () => {
+            // Reset ALL game progress in localStorage
+            localStorage.clear(); // This will clear everything
+            // Or if you want to keep some data:
+            localStorage.removeItem('currentStage');
+            localStorage.removeItem('currentStageKey');
+            localStorage.setItem('currentStage', '0'); // Reset to stage 0
+            
+            // Navigate to index page
+            window.location.href = 'index.html';
+        };
 
+        // Remove existing escape key listener if any
+        if (escKeyListener) {
+            document.removeEventListener('keydown', escKeyListener);
+        }
+        
         // Add keyboard listener for pause
-        document.addEventListener('keydown', (e) => {
+        escKeyListener = (e) => {
             if (e.key === 'Escape') {
                 togglePause();
             }
-        });
+        };
+        document.addEventListener('keydown', escKeyListener);
     }
 
     // Add pause control functions
@@ -924,6 +998,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 ctx.drawImage(resultImage, x, y, imageWidth, imageHeight);
             }
+
+            // Create game over buttons if they don't exist
+            if (!gameOverButtons) {
+                gameOverButtons = document.createElement('div');
+                gameOverButtons.style.cssText = `
+                    position: fixed;
+                    left: 50%;
+                    top: 70%;
+                    transform: translate(-50%, -50%);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    z-index: 1002;
+                `;
+
+                const buttonStyle = `
+                    padding: 15px 30px;
+                    font-size: 1.2em;
+                    border: 2px solid #fff;
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    min-width: 200px;
+                `;
+
+                if (gameWon) {
+                    // Victory: Show "Next Stage" button
+                    const nextButton = document.createElement('button');
+                    nextButton.textContent = 'Next Stage';
+                    nextButton.style.cssText = buttonStyle;
+                    nextButton.onclick = () => {
+                        window.location.href = 'selectStage.html';
+                    };
+                    gameOverButtons.appendChild(nextButton);
+                } else {
+                    // Defeat: Show "Restart Battle" button
+                    const restartButton = document.createElement('button');
+                    restartButton.textContent = 'Restart Battle';
+                    restartButton.style.cssText = buttonStyle;
+                    restartButton.onclick = async () => {
+                        gameOverButtons.remove();
+                        gameOverButtons = null;
+                        await init(); // Let it read from localStorage
+                    };
+                    gameOverButtons.appendChild(restartButton);
+                }
+
+                document.body.appendChild(gameOverButtons);
+            }
         }
     }
 
@@ -955,13 +1080,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Modify init function to setup pause menu
-    async function init(stageId = 'stage1') {
+    // Add this helper function before init()
+    function getStageIdFromIndex(index) {
+        // Convert index to stageId format
+        return `stage${index}`;
+    }
+
+    // Modify init function
+    async function init(stageId = null) {
         try {
+            // Clean up everything before initializing
+            cleanup();
+
+            // If no stageId provided, get it from localStorage
+            if (!stageId) {
+                let currentStageIndex = localStorage.getItem('currentStage');
+                if (!currentStageIndex) {
+                    // If no stage found in localStorage, start from stage 0
+                    currentStageIndex = '0';
+                    localStorage.setItem('currentStage', currentStageIndex);
+                }
+                stageId = getStageIdFromIndex(currentStageIndex);
+            }
+
             // Load stage configuration
             currentStage = getStageConfig(stageId);
+            if (!currentStage) {
+                console.error(`Failed to load configuration for stage: ${stageId}`);
+                // If stage not found, reset to stage 0
+                localStorage.setItem('currentStage', '0');
+                currentStage = getStageConfig('stage0');
+                if (!currentStage) {
+                    return false;
+                }
+            }
             
-            // Initialize audio system with stage-specific BGM
+            // Rest of the initialization code remains the same
             const audioInitialized = await initAudioSystem(currentStage.bgm);
             if (!audioInitialized) return false;
 
@@ -991,33 +1145,14 @@ document.addEventListener('DOMContentLoaded', () => {
             gameOver = false;
             gameWon = false;
 
-            // Initially disable any existing summon buttons (e.g., during restart)
-            document.querySelectorAll('.summon-button').forEach(btn => btn.disabled = true);
-
-            // --- Keep Restart button logic ---
-            const restartButtonId = 'restart-button';
-            let restartButton = document.getElementById(restartButtonId); 
-            if (!restartButton) { // Add restart button only if it doesn't exist
-                restartButton = document.createElement('button');
-                restartButton.id = restartButtonId; // Assign ID
-                restartButton.textContent = 'Restart Battle';
-                restartButton.style.position = 'absolute';
-                restartButton.style.top = '10px'; // Position top-left
-                restartButton.style.left = '10px'; 
-                restartButton.style.padding = '5px 10px';
-                document.body.appendChild(restartButton);
-            }
-            // Ensure onclick is always set to the latest init function reference
-            restartButton.onclick = init;
-
             // Setup rhythm input after audio initialization
             setupRhythmInput();
-            setupSkipInput(); // Add this line
+            setupSkipInput();
 
             // Set up pattern display
             setupPatternDisplay();
 
-// Remove old pause button if it exists
+            // Remove old pause button if it exists
             const oldPauseButton = document.getElementById('pause-button');
             if (oldPauseButton) {
                 oldPauseButton.remove();
@@ -1032,11 +1167,17 @@ document.addEventListener('DOMContentLoaded', () => {
             isPaused = false;
             document.getElementById('pause-menu').style.display = 'none';
 
-            // --- Start the game loop ---
-            lastTime = 0; // Reset lastTime for deltaTime calculation
+            // Reset canvas size
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Start the game loop
+            lastTime = 0;
             requestAnimationFrame(gameLoop);
         } catch (error) {
             console.error("Failed to initialize stage:", error);
+            // On error, reset to stage 0
+            localStorage.setItem('currentStage', '0');
             return false;
         }
     }
