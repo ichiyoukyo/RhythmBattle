@@ -1,6 +1,6 @@
 // --- js/battle.js ---
 
-import { generateMasterBeatArray, generateEvaluationWindows,generateBeatIntervals, getMetadata, generateAudioArray, generateSkipDetectArray } from './RhythmEngine.js';
+import { generateMasterBeatArray, generateEvaluationWindows,generateBeatIntervals, getMetadata, generateAudioArray, generateSkipDetectArray } from './rhythmEngine.js';
 import { recordInput, getRecentInputs, updatePatterns, knownPatterns } from './detectPattern.js';
 import { getStageConfig, getRandomEnemy } from './stageConfig.js';
 
